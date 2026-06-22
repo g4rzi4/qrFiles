@@ -14,6 +14,10 @@
     })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  </script>
   <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-[#EFEAD8] via-[#F2EEDE] to-[#E3EBE0] dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 text-[#2F3A2D] dark:text-stone-50">
@@ -139,44 +143,44 @@
 
         <!-- Posicion del QR -->
         <div>
-          <label class="block text-sm font-medium text-[#3F4A3D] dark:text-stone-300 mb-3">Posicion del codigo QR en el PDF</label>
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <label class="relative cursor-pointer">
-              <input type="radio" name="qr_position" value="superior_izquierda" class="sr-only peer" />
-              <div class="p-3 bg-[#F5F1E1] dark:bg-stone-800 border-2 border-[#D0C9C0] dark:border-stone-700 rounded-xl text-center text-sm text-[#4C5C4E] dark:text-stone-300
-                          peer-checked:border-[#5F7161] dark:peer-checked:border-orange-400 peer-checked:bg-[#E3EBE0] dark:peer-checked:bg-orange-900/30 peer-checked:text-[#3F4A3D] dark:peer-checked:text-orange-300 transition hover:border-[#A39B8C] dark:hover:border-stone-500">
-                <div class="text-lg mb-1">↖</div>Superior izquierda
-              </div>
-            </label>
-            <label class="relative cursor-pointer">
-              <input type="radio" name="qr_position" value="superior_derecha" class="sr-only peer" />
-              <div class="p-3 bg-[#F5F1E1] dark:bg-stone-800 border-2 border-[#D0C9C0] dark:border-stone-700 rounded-xl text-center text-sm text-[#4C5C4E] dark:text-stone-300
-                          peer-checked:border-[#5F7161] dark:peer-checked:border-orange-400 peer-checked:bg-[#E3EBE0] dark:peer-checked:bg-orange-900/30 peer-checked:text-[#3F4A3D] dark:peer-checked:text-orange-300 transition hover:border-[#A39B8C] dark:hover:border-stone-500">
-                <div class="text-lg mb-1">↗</div>Superior derecha
-              </div>
-            </label>
-            <label class="relative cursor-pointer">
-              <input type="radio" name="qr_position" value="inferior_izquierda" class="sr-only peer" />
-              <div class="p-3 bg-[#F5F1E1] dark:bg-stone-800 border-2 border-[#D0C9C0] dark:border-stone-700 rounded-xl text-center text-sm text-[#4C5C4E] dark:text-stone-300
-                          peer-checked:border-[#5F7161] dark:peer-checked:border-orange-400 peer-checked:bg-[#E3EBE0] dark:peer-checked:bg-orange-900/30 peer-checked:text-[#3F4A3D] dark:peer-checked:text-orange-300 transition hover:border-[#A39B8C] dark:hover:border-stone-500">
-                <div class="text-lg mb-1">↙</div>Inferior izquierda
-              </div>
-            </label>
-            <label class="relative cursor-pointer">
-              <input type="radio" name="qr_position" value="inferior_derecha" class="sr-only peer" checked />
-              <div class="p-3 bg-[#E3EBE0] dark:bg-orange-900/30 border-2 border-[#5F7161] dark:border-orange-400 rounded-xl text-center text-sm text-[#3F4A3D] dark:text-orange-300
-                          peer-checked:border-[#5F7161] dark:peer-checked:border-orange-400 peer-checked:bg-[#E3EBE0] dark:peer-checked:bg-orange-900/30 peer-checked:text-[#3F4A3D] dark:peer-checked:text-orange-300 transition hover:border-[#A39B8C] dark:hover:border-stone-500">
-                <div class="text-lg mb-1">↘</div>Inferior derecha
-              </div>
-            </label>
-            <label class="relative cursor-pointer sm:col-span-2">
-              <input type="radio" name="qr_position" value="ultima_inferior_derecha" class="sr-only peer" />
-              <div class="p-3 bg-[#F5F1E1] dark:bg-stone-800 border-2 border-[#D0C9C0] dark:border-stone-700 rounded-xl text-center text-sm text-[#4C5C4E] dark:text-stone-300
-                          peer-checked:border-[#5F7161] dark:peer-checked:border-orange-400 peer-checked:bg-[#E3EBE0] dark:peer-checked:bg-orange-900/30 peer-checked:text-[#3F4A3D] dark:peer-checked:text-orange-300 transition hover:border-[#A39B8C] dark:hover:border-stone-500">
-                <div class="text-lg mb-1">📄↘</div>Ultima pagina inf. derecha
-              </div>
+          <label class="block text-sm font-medium text-[#3F4A3D] dark:text-stone-300 mb-1.5">Pagina del documento</label>
+          <div class="flex items-center gap-3 mb-4">
+            <input type="number" id="qr-page-input" min="1" value="1"
+              class="w-20 px-3 py-2 bg-[#F5F1E1] dark:bg-stone-800 border border-[#D0C9C0] dark:border-stone-700 rounded-lg text-[#2F3A2D] dark:text-stone-50
+                     focus:outline-none focus:ring-2 focus:ring-[#6D8B74] dark:focus:ring-orange-400 focus:border-transparent transition disabled:opacity-50" />
+            <span id="qr-page-total" class="text-sm text-[#5F7161] dark:text-stone-400">de 1 pagina(s)</span>
+            <label class="ml-auto flex items-center gap-2 text-sm text-[#4C5C4E] dark:text-stone-300 cursor-pointer">
+              <input type="checkbox" id="qr-last-page" class="rounded border-[#D0C9C0] dark:border-stone-700 text-[#5F7161] focus:ring-[#6D8B74]" />
+              Ultima pagina
             </label>
           </div>
+
+          <label class="block text-sm font-medium text-[#3F4A3D] dark:text-stone-300 mb-1.5">
+            Area del codigo QR <span class="text-[#6D8B74] dark:text-stone-500 font-normal">(arrastralo a donde quieras)</span>
+          </label>
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button type="button" data-corner="superior_izquierda" class="qr-corner-btn px-3 py-1.5 text-xs rounded-lg bg-[#E3DDC8] dark:bg-stone-800 text-[#4C5C4E] dark:text-stone-300 hover:bg-[#D6CFB8] dark:hover:bg-stone-700 transition">↖ Sup. izq.</button>
+            <button type="button" data-corner="superior_derecha" class="qr-corner-btn px-3 py-1.5 text-xs rounded-lg bg-[#E3DDC8] dark:bg-stone-800 text-[#4C5C4E] dark:text-stone-300 hover:bg-[#D6CFB8] dark:hover:bg-stone-700 transition">↗ Sup. der.</button>
+            <button type="button" data-corner="inferior_izquierda" class="qr-corner-btn px-3 py-1.5 text-xs rounded-lg bg-[#E3DDC8] dark:bg-stone-800 text-[#4C5C4E] dark:text-stone-300 hover:bg-[#D6CFB8] dark:hover:bg-stone-700 transition">↙ Inf. izq.</button>
+            <button type="button" data-corner="inferior_derecha" class="qr-corner-btn px-3 py-1.5 text-xs rounded-lg bg-[#E3EBE0] dark:bg-orange-900/30 text-[#3F4A3D] dark:text-orange-300 hover:bg-[#D3E0CE] dark:hover:bg-orange-800/40 transition">↘ Inf. der.</button>
+          </div>
+
+          <div id="qr-preview-wrap" class="relative mx-auto bg-[#F5F1E1] dark:bg-stone-800 border border-[#D0C9C0] dark:border-stone-700 rounded-lg overflow-hidden hidden" style="max-width: 360px;">
+            <canvas id="qr-page-canvas" class="block w-full h-auto"></canvas>
+            <div id="qr-drag-box" class="absolute select-none flex flex-col items-center" style="width: 64px; cursor: grab; touch-action: none;">
+              <div class="w-full aspect-square bg-[#5F7161]/85 dark:bg-orange-500/80 border-2 border-[#5F7161] dark:border-orange-400 rounded-md flex items-center justify-center shadow">
+                <svg class="w-1/2 h-1/2 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M3 3h7v7H3V3zm2 2v3h3V5H5zm9-2h7v7h-7V3zm2 2v3h3V5h-3zM3 14h7v7H3v-7zm2 2v3h3v-3H5zm11-2h2v2h-2v-2zm3 0h2v2h-2v-2zm-3 3h2v2h-2v-2zm3 0h2v5h-5v-2h3v-3z"/>
+                </svg>
+              </div>
+              <span class="mt-1 text-[8px] leading-none text-center text-white bg-[#5F7161] dark:bg-orange-500 px-1.5 py-1 rounded whitespace-nowrap shadow">Valida tu documento</span>
+            </div>
+          </div>
+          <p id="qr-preview-hint" class="text-xs text-[#6D8B74] dark:text-stone-500 mt-2">Selecciona un PDF para previsualizar la pagina y colocar el QR donde quieras.</p>
+
+          <input type="hidden" name="qr_page" id="qr-page-hidden" value="1" />
+          <input type="hidden" name="qr_pos_x" id="qr-pos-x-hidden" value="1" />
+          <input type="hidden" name="qr_pos_y" id="qr-pos-y-hidden" value="1" />
         </div>
 
         <button type="submit" id="btn-submit"
@@ -233,13 +237,150 @@
       document.getElementById('file-name').textContent = name;
       document.getElementById('file-info').classList.remove('hidden');
       dropZone.classList.add('hidden');
+      const file = pdfInput.files[0];
+      if (file) loadPdfPreview(file);
     }
 
     function clearFile() {
       pdfInput.value = '';
       document.getElementById('file-info').classList.add('hidden');
       dropZone.classList.remove('hidden');
+      pdfDocProxy = null;
+      previewWrap.classList.add('hidden');
+      previewHint.textContent = 'Selecciona un PDF para previsualizar la pagina y colocar el QR donde quieras.';
+      previewHint.classList.remove('hidden');
     }
+
+    // --- Previsualizacion y posicionamiento del QR ---
+    let pdfDocProxy = null;
+    let totalPaginas = 1;
+    let dragFrac = { x: 1, y: 1 };
+
+    const previewWrap = document.getElementById('qr-preview-wrap');
+    const previewCanvas = document.getElementById('qr-page-canvas');
+    const dragBox = document.getElementById('qr-drag-box');
+    const previewHint = document.getElementById('qr-preview-hint');
+    const pageInput = document.getElementById('qr-page-input');
+    const pageTotalLabel = document.getElementById('qr-page-total');
+    const lastPageCheckbox = document.getElementById('qr-last-page');
+
+    async function loadPdfPreview(file) {
+      try {
+        const buf = await file.arrayBuffer();
+        pdfDocProxy = await pdfjsLib.getDocument({ data: buf }).promise;
+        totalPaginas = pdfDocProxy.numPages;
+        pageInput.max = totalPaginas;
+        pageInput.value = 1;
+        pageTotalLabel.textContent = `de ${totalPaginas} pagina(s)`;
+        lastPageCheckbox.checked = false;
+        dragFrac = { x: 1, y: 1 };
+        previewWrap.classList.remove('hidden');
+        previewHint.classList.add('hidden');
+        await renderPdfPage(1);
+      } catch (err) {
+        console.error('No se pudo previsualizar el PDF', err);
+        pdfDocProxy = null;
+        previewWrap.classList.add('hidden');
+        previewHint.textContent = 'No se pudo generar la vista previa, pero puedes continuar (se usara la esquina inferior derecha por defecto).';
+        previewHint.classList.remove('hidden');
+      }
+    }
+
+    async function renderPdfPage(pageNum) {
+      const page = await pdfDocProxy.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 1.3 });
+      previewCanvas.width = viewport.width;
+      previewCanvas.height = viewport.height;
+      const ctx = previewCanvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      placeDragBoxFromFrac();
+    }
+
+    function effectivePageNumber() {
+      if (lastPageCheckbox.checked) return totalPaginas;
+      const n = parseInt(pageInput.value, 10);
+      return Math.min(Math.max(n || 1, 1), totalPaginas);
+    }
+
+    function placeDragBoxFromFrac() {
+      const rect = previewCanvas.getBoundingClientRect();
+      const boxW = dragBox.offsetWidth;
+      const boxH = dragBox.offsetHeight;
+      const maxLeft = Math.max(rect.width - boxW, 0);
+      const maxTop = Math.max(rect.height - boxH, 0);
+      dragBox.style.left = (dragFrac.x * maxLeft) + 'px';
+      dragBox.style.top = (dragFrac.y * maxTop) + 'px';
+    }
+
+    function updateFracFromBoxPosition() {
+      const rect = previewCanvas.getBoundingClientRect();
+      const boxW = dragBox.offsetWidth;
+      const boxH = dragBox.offsetHeight;
+      const maxLeft = Math.max(rect.width - boxW, 0);
+      const maxTop = Math.max(rect.height - boxH, 0);
+      const left = parseFloat(dragBox.style.left || '0');
+      const top = parseFloat(dragBox.style.top || '0');
+      dragFrac.x = maxLeft > 0 ? Math.min(Math.max(left / maxLeft, 0), 1) : 0;
+      dragFrac.y = maxTop > 0 ? Math.min(Math.max(top / maxTop, 0), 1) : 0;
+    }
+
+    let dragging = false, startX, startY, startLeft, startTop;
+
+    function dragStart(clientX, clientY) {
+      dragging = true;
+      startX = clientX; startY = clientY;
+      startLeft = parseFloat(dragBox.style.left || '0');
+      startTop = parseFloat(dragBox.style.top || '0');
+      dragBox.style.cursor = 'grabbing';
+    }
+    function dragMove(clientX, clientY) {
+      if (!dragging) return;
+      const rect = previewCanvas.getBoundingClientRect();
+      const boxW = dragBox.offsetWidth;
+      const boxH = dragBox.offsetHeight;
+      const maxLeft = Math.max(rect.width - boxW, 0);
+      const maxTop = Math.max(rect.height - boxH, 0);
+      let newLeft = Math.min(Math.max(startLeft + (clientX - startX), 0), maxLeft);
+      let newTop = Math.min(Math.max(startTop + (clientY - startY), 0), maxTop);
+      dragBox.style.left = newLeft + 'px';
+      dragBox.style.top = newTop + 'px';
+    }
+    function dragEnd() {
+      if (!dragging) return;
+      dragging = false;
+      dragBox.style.cursor = 'grab';
+      updateFracFromBoxPosition();
+    }
+
+    dragBox.addEventListener('mousedown', e => { e.preventDefault(); dragStart(e.clientX, e.clientY); });
+    window.addEventListener('mousemove', e => dragMove(e.clientX, e.clientY));
+    window.addEventListener('mouseup', dragEnd);
+
+    dragBox.addEventListener('touchstart', e => { const t = e.touches[0]; dragStart(t.clientX, t.clientY); }, { passive: true });
+    window.addEventListener('touchmove', e => { if (dragging) { const t = e.touches[0]; dragMove(t.clientX, t.clientY); } }, { passive: true });
+    window.addEventListener('touchend', dragEnd);
+    window.addEventListener('resize', () => { if (pdfDocProxy) placeDragBoxFromFrac(); });
+
+    document.querySelectorAll('.qr-corner-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const map = {
+          superior_izquierda: { x: 0, y: 0 },
+          superior_derecha: { x: 1, y: 0 },
+          inferior_izquierda: { x: 0, y: 1 },
+          inferior_derecha: { x: 1, y: 1 }
+        };
+        dragFrac = map[btn.dataset.corner];
+        placeDragBoxFromFrac();
+      });
+    });
+
+    pageInput.addEventListener('change', () => {
+      lastPageCheckbox.checked = false;
+      if (pdfDocProxy) renderPdfPage(effectivePageNumber());
+    });
+    lastPageCheckbox.addEventListener('change', () => {
+      if (pdfDocProxy) renderPdfPage(effectivePageNumber());
+    });
 
     document.getElementById('upload-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -249,6 +390,10 @@
       errorDiv.classList.add('hidden');
       btn.disabled = true;
       btn.textContent = 'Procesando...';
+
+      document.getElementById('qr-page-hidden').value = lastPageCheckbox.checked ? 'ultima' : String(effectivePageNumber());
+      document.getElementById('qr-pos-x-hidden').value = dragFrac.x.toFixed(4);
+      document.getElementById('qr-pos-y-hidden').value = dragFrac.y.toFixed(4);
 
       const formData = new FormData(e.target);
 
@@ -289,6 +434,7 @@
       document.getElementById('success-box').classList.add('hidden');
       document.getElementById('file-info').classList.add('hidden');
       dropZone.classList.remove('hidden');
+      clearFile();
     }
 
     async function logout() {

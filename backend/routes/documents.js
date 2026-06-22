@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
 const QRCode = require('qrcode');
-const { PDFDocument } = require('pdf-lib');
+const { PDFDocument, StandardFonts, rgb } = require('pdf-lib');
 const db = require('../config/database');
 const { requireAuth } = require('../middleware/auth');
 
@@ -39,45 +39,68 @@ function generarFolio() {
   return `DOC-${year}-${short}`;
 }
 
-function calcularPosicionQR(position, pageWidth, pageHeight, qrSize, margin) {
-  switch (position) {
-    case 'superior_derecha':
-      return { x: pageWidth - qrSize - margin, y: pageHeight - qrSize - margin };
-    case 'superior_izquierda':
-      return { x: margin, y: pageHeight - qrSize - margin };
-    case 'inferior_izquierda':
-      return { x: margin, y: margin };
-    case 'inferior_derecha':
-    case 'ultima_inferior_derecha':
-    default:
-      return { x: pageWidth - qrSize - margin, y: margin };
-  }
+const QR_CAPTION = 'Valida tu documento';
+
+function fraccionValida(valor, fallback) {
+  const n = parseFloat(valor);
+  if (isNaN(n)) return fallback;
+  return Math.min(Math.max(n, 0), 1);
 }
 
-async function insertarQREnPDF(pdfBuffer, qrBuffer, position) {
+async function insertarQREnPDF(pdfBuffer, qrBuffer, { qrPage, xFrac, yFrac }) {
   const pdfDoc = await PDFDocument.load(pdfBuffer);
   const qrImage = await pdfDoc.embedPng(qrBuffer);
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
   const pages = pdfDoc.getPages();
-  const page = position === 'ultima_inferior_derecha'
-    ? pages[pages.length - 1]
-    : pages[0];
+  const totalPaginas = pages.length;
 
-  const { width, height } = page.getSize();
+  let pageIndex;
+  if (qrPage === 'ultima') {
+    pageIndex = totalPaginas - 1;
+  } else {
+    const n = parseInt(qrPage, 10);
+    pageIndex = (!isNaN(n) && n >= 1 && n <= totalPaginas) ? n - 1 : 0;
+  }
+  const page = pages[pageIndex];
+  const { width: pageWidth, height: pageHeight } = page.getSize();
+
   const qrSize = 90;
-  const margin = 20;
-  const { x, y } = calcularPosicionQR(position, width, height, qrSize, margin);
+  const gap = 6;
+  const captionSize = 8;
+  const blockHeight = qrSize + gap + captionSize + 2;
 
-  page.drawImage(qrImage, { x, y, width: qrSize, height: qrSize });
+  const fx = fraccionValida(xFrac, 1);
+  const fy = fraccionValida(yFrac, 1);
 
-  return await pdfDoc.save();
+  const maxX = Math.max(pageWidth - qrSize, 0);
+  const maxYTravel = Math.max(pageHeight - blockHeight, 0);
+
+  const x = fx * maxX;
+  const blockTop = fy * maxYTravel;
+  const qrY = pageHeight - blockTop - qrSize;
+  const captionY = qrY - gap - captionSize;
+
+  const textWidth = font.widthOfTextAtSize(QR_CAPTION, captionSize);
+  const captionX = x + (qrSize - textWidth) / 2;
+
+  page.drawImage(qrImage, { x, y: qrY, width: qrSize, height: qrSize });
+  page.drawText(QR_CAPTION, {
+    x: captionX,
+    y: captionY,
+    size: captionSize,
+    font,
+    color: rgb(0.373, 0.443, 0.380)
+  });
+
+  return { pdfBytes: await pdfDoc.save(), pageIndex: pageIndex + 1, totalPaginas };
 }
 
 // POST /api/documents - Subir documento con QR
 router.post('/', requireAuth, upload.single('pdf'), async (req, res) => {
   const conn = await db.getConnection();
   try {
-    const { titulo, tipo_documento, area_emisora, qr_position } = req.body;
+    const { titulo, tipo_documento, area_emisora, qr_page, qr_pos_x, qr_pos_y } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ error: 'Debes subir un archivo PDF.' });
@@ -88,7 +111,7 @@ router.post('/', requireAuth, upload.single('pdf'), async (req, res) => {
     }
 
     const folio = generarFolio();
-    const position = qr_position || 'inferior_derecha';
+    const qrPageSelector = qr_page || '1';
     const appUrl = process.env.APP_URL || 'http://localhost:3000';
     const validacionUrl = `${appUrl}/validar/${folio}`;
 
@@ -106,7 +129,11 @@ router.post('/', requireAuth, upload.single('pdf'), async (req, res) => {
 
     // Leer PDF original e insertar QR
     const pdfBuffer = fs.readFileSync(req.file.path);
-    const pdfConQR = await insertarQREnPDF(pdfBuffer, qrBuffer, position);
+    const xFrac = qr_pos_x !== undefined ? qr_pos_x : '1';
+    const yFrac = qr_pos_y !== undefined ? qr_pos_y : '1';
+    const { pdfBytes: pdfConQR, pageIndex, totalPaginas } = await insertarQREnPDF(
+      pdfBuffer, qrBuffer, { qrPage: qrPageSelector, xFrac, yFrac }
+    );
 
     const qrPdfName = `${folio}_con_qr.pdf`;
     const qrPdfPath = path.join(__dirname, '../uploads/qr_pdfs', qrPdfName);
@@ -116,14 +143,17 @@ router.post('/', requireAuth, upload.single('pdf'), async (req, res) => {
 
     const [result] = await conn.execute(
       `INSERT INTO documentos
-        (folio, titulo, tipo_documento, area_emisora, estado, pdf_original_path, pdf_qr_path, qr_image_path, qr_position, usuario_id)
-       VALUES (?, ?, ?, ?, 'vigente', ?, ?, ?, ?, ?)`,
+        (folio, titulo, tipo_documento, area_emisora, estado, pdf_original_path, pdf_qr_path, qr_image_path, qr_position, qr_page, qr_pos_x, qr_pos_y, usuario_id)
+       VALUES (?, ?, ?, ?, 'vigente', ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         folio, titulo, tipo_documento, area_emisora,
         req.file.filename,
         qrPdfName,
         qrImageName,
-        position,
+        'personalizada',
+        pageIndex,
+        fraccionValida(xFrac, 1),
+        fraccionValida(yFrac, 1),
         req.session.userId
       ]
     );
@@ -139,7 +169,8 @@ router.post('/', requireAuth, upload.single('pdf'), async (req, res) => {
         tipo_documento,
         area_emisora,
         estado: 'vigente',
-        qr_position: position,
+        qr_page: pageIndex,
+        qr_total_paginas: totalPaginas,
         validacion_url: validacionUrl
       }
     });
