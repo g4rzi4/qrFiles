@@ -3,7 +3,7 @@ version: '3.8'
 services:
   app:
     build: ./backend
-    container_name: qrfiles_app
+    container_name: qrFiles
     ports:
       - "3000:3000"
     environment:
@@ -12,7 +12,7 @@ services:
       - DB_PASSWORD=qrpassword
       - DB_NAME=qrfiles_db
       - SESSION_SECRET=qrfiles_super_secret_2024
-      - APP_URL=http://localhost:3000
+      - APP_URL=http://192.168.1.85:3000
       - PORT=3000
     volumes:
       - uploads_data:/app/uploads
@@ -35,7 +35,7 @@ services:
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
       - mysql_data:/var/lib/mysql
     ports:
-      - "3306:3306"
+      - "3307:3306"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
       interval: 10s

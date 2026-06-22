@@ -1,7 +1,35 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const db = require('../config/database');
 
 const router = express.Router();
+
+// GET /api/validate/:folio/pdf - PDF publico (sin login)
+router.get('/:folio/pdf', async (req, res) => {
+  try {
+    const [rows] = await db.execute(
+      'SELECT pdf_qr_path FROM documentos WHERE folio = ?',
+      [req.params.folio]
+    );
+
+    if (rows.length === 0 || !rows[0].pdf_qr_path) {
+      return res.status(404).json({ error: 'Documento no encontrado.' });
+    }
+
+    const filePath = path.join(__dirname, '../uploads/qr_pdfs', rows[0].pdf_qr_path);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Archivo no encontrado.' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${req.params.folio}.pdf"`);
+    res.sendFile(filePath);
+  } catch (err) {
+    console.error('Error al servir el PDF:', err);
+    res.status(500).json({ error: 'Error al obtener el archivo.' });
+  }
+});
 
 // GET /api/validate/:folio - Validacion publica (sin login)
 router.get('/:folio', async (req, res) => {
@@ -42,7 +70,8 @@ router.get('/:folio', async (req, res) => {
       area_emisora: doc.area_emisora,
       estado: doc.estado,
       fecha_registro: doc.created_at,
-      registrado_por: doc.usuario_nombre
+      registrado_por: doc.usuario_nombre,
+      pdf_url: `/api/validate/${doc.folio}/pdf`
     });
   } catch (err) {
     console.error('Error al validar documento:', err);

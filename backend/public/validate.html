@@ -79,6 +79,16 @@
       <div class="px-6 py-6 space-y-3" id="doc-info-cancelado"></div>
     </div>
 
+    <!-- Visor de PDF -->
+    <div id="pdf-viewer" class="hidden mt-6 bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl">
+      <div class="px-6 py-4 flex items-center justify-between border-b border-slate-700">
+        <p class="text-white font-semibold text-sm">Documento PDF</p>
+        <a id="pdf-download-link" href="#" target="_blank" rel="noopener"
+           class="text-blue-400 hover:text-blue-300 text-sm font-medium">Abrir en pestana nueva &rarr;</a>
+      </div>
+      <iframe id="pdf-frame" class="w-full h-[70vh] bg-slate-900" src=""></iframe>
+    </div>
+
     <!-- No encontrado -->
     <div id="result-no-encontrado" class="hidden bg-slate-800 rounded-2xl border-2 border-slate-600 overflow-hidden shadow-2xl">
       <div class="bg-slate-700/30 border-b border-slate-700 px-6 py-5 flex items-center gap-4">
@@ -174,6 +184,12 @@
         } else if (data.estado === 'cancelado') {
           document.getElementById('doc-info-cancelado').innerHTML = infoHtml;
           document.getElementById('result-cancelado').classList.remove('hidden');
+        }
+
+        if (data.pdf_url) {
+          document.getElementById('pdf-frame').src = data.pdf_url;
+          document.getElementById('pdf-download-link').href = data.pdf_url;
+          document.getElementById('pdf-viewer').classList.remove('hidden');
         }
       } catch (err) {
         document.getElementById('loading').innerHTML = '<p class="text-red-400">Error al consultar el documento. Intenta de nuevo.</p>';
