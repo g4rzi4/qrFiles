@@ -26,6 +26,7 @@
         <a href="/dashboard.html" class="text-sm text-slate-300 hover:text-white transition">Panel</a>
         <a href="/upload.html" class="text-sm text-slate-300 hover:text-white transition">Subir Documento</a>
         <a href="/repository.html" class="text-sm text-blue-400 font-medium">Repositorio</a>
+        <a href="/usuarios.html" id="nav-usuarios" class="hidden text-sm text-slate-300 hover:text-white transition">Usuarios</a>
         <span class="text-slate-600">|</span>
         <span id="user-name" class="text-sm text-slate-400"></span>
         <button onclick="logout()" class="text-sm text-red-400 hover:text-red-300 transition font-medium">Cerrar Sesion</button>
@@ -38,6 +39,7 @@
       <div>
         <h1 class="text-3xl font-bold">Repositorio de Documentos</h1>
         <p class="text-slate-400 mt-1">Consulta, descarga y gestiona el estado de los documentos</p>
+        <p id="filtro-usuario-badge" class="hidden mt-2 text-sm text-blue-400"></p>
       </div>
       <a href="/upload.html"
         class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-semibold transition flex items-center gap-2">
@@ -191,13 +193,33 @@
       if (!res.ok) { window.location.href = '/login.html'; return; }
       const data = await res.json();
       document.getElementById('user-name').textContent = data.nombre;
+      if (data.rol === 'admin') {
+        document.getElementById('nav-usuarios').classList.remove('hidden');
+      }
     }
 
     async function loadDocs() {
       try {
-        const res = await fetch('/api/documents');
+        const usuarioId = new URLSearchParams(window.location.search).get('usuario_id');
+        const url = usuarioId ? `/api/documents?usuario_id=${encodeURIComponent(usuarioId)}` : '/api/documents';
+        const res = await fetch(url);
         if (!res.ok) return;
         allDocs = await res.json();
+
+        const badge = document.getElementById('filtro-usuario-badge');
+        if (usuarioId && allDocs.length > 0) {
+          badge.textContent = `Mostrando documentos de: ${allDocs[0].usuario_nombre} ${allDocs[0].usuario_apellidos || ''} — `;
+          const clearLink = document.createElement('a');
+          clearLink.href = '/repository.html';
+          clearLink.textContent = 'Ver todos';
+          clearLink.className = 'underline hover:text-blue-300';
+          badge.appendChild(clearLink);
+          badge.classList.remove('hidden');
+        } else if (usuarioId) {
+          badge.innerHTML = 'Este usuario no tiene documentos. <a href="/repository.html" class="underline hover:text-blue-300">Ver todos</a>';
+          badge.classList.remove('hidden');
+        }
+
         renderTable(allDocs);
       } catch (err) {
         console.error(err);
@@ -218,7 +240,7 @@
           <td class="px-5 py-4 font-mono text-xs text-blue-400">${d.folio}</td>
           <td class="px-5 py-4 text-white max-w-xs">
             <p class="truncate font-medium">${d.titulo}</p>
-            <p class="text-xs text-slate-500 mt-0.5">Por: ${d.usuario_nombre}</p>
+            <p class="text-xs text-slate-500 mt-0.5">Por: ${d.usuario_nombre} ${d.usuario_apellidos || ''}</p>
           </td>
           <td class="px-5 py-4 text-slate-300">${d.tipo_documento}</td>
           <td class="px-5 py-4 text-slate-300 max-w-[160px]">

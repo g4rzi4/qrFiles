@@ -8,4 +8,11 @@ function requireAuth(req, res, next) {
   next();
 }
 
-module.exports = { requireAuth };
+function requireAdmin(req, res, next) {
+  if (req.session.userRol !== 'admin') {
+    return res.status(403).json({ error: 'Acceso restringido a administradores.' });
+  }
+  next();
+}
+
+module.exports = { requireAuth, requireAdmin };

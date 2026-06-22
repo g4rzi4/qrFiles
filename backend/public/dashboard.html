@@ -26,6 +26,7 @@
         <a href="/dashboard.html" class="text-sm text-blue-400 font-medium">Panel</a>
         <a href="/upload.html" class="text-sm text-slate-300 hover:text-white transition">Subir Documento</a>
         <a href="/repository.html" class="text-sm text-slate-300 hover:text-white transition">Repositorio</a>
+        <a href="/usuarios.html" id="nav-usuarios" class="hidden text-sm text-slate-300 hover:text-white transition">Usuarios</a>
         <span class="text-slate-600">|</span>
         <span id="user-name" class="text-sm text-slate-400"></span>
         <button onclick="logout()"
@@ -110,6 +111,9 @@
       if (!res.ok) { window.location.href = '/login.html'; return; }
       const data = await res.json();
       document.getElementById('user-name').textContent = data.nombre;
+      if (data.rol === 'admin') {
+        document.getElementById('nav-usuarios').classList.remove('hidden');
+      }
     }
 
     async function loadStats() {
@@ -142,6 +146,7 @@
             <div class="flex-1 min-w-0">
               <p class="font-medium text-white truncate">${d.titulo}</p>
               <p class="text-sm text-slate-400">${d.folio} &middot; ${d.tipo_documento} &middot; ${d.area_emisora}</p>
+              <p class="text-xs text-slate-500 mt-0.5">Por: ${d.usuario_nombre} ${d.usuario_apellidos || ''}</p>
             </div>
             <div class="flex items-center gap-3 ml-4">
               <span class="text-xs px-2.5 py-1 rounded-full font-medium ${estadoBadge[d.estado] || ''}">

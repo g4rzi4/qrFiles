@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Usuarios - QRFiles</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-slate-900 text-white">
+
+  <!-- Navbar -->
+  <nav class="bg-slate-800 border-b border-slate-700 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <span class="text-lg font-bold">QRFiles</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/dashboard.html" class="text-sm text-slate-300 hover:text-white transition">Panel</a>
+        <a href="/upload.html" class="text-sm text-slate-300 hover:text-white transition">Subir Documento</a>
+        <a href="/repository.html" class="text-sm text-slate-300 hover:text-white transition">Repositorio</a>
+        <a href="/usuarios.html" class="text-sm text-blue-400 font-medium">Usuarios</a>
+        <span class="text-slate-600">|</span>
+        <span id="user-name" class="text-sm text-slate-400"></span>
+        <button onclick="logout()" class="text-sm text-red-400 hover:text-red-300 transition font-medium">Cerrar Sesion</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-6 py-10">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold">Usuarios</h1>
+      <p class="text-slate-400 mt-1">Documentos clasificados por usuario y estado</p>
+    </div>
+
+    <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-700 text-left">
+              <th class="px-5 py-3.5 text-slate-400 font-medium">Usuario</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium">Correo</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium">Rol</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium text-center">Vigentes</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium text-center">Revocados</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium text-center">Cancelados</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium text-center">Total</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="users-table" class="divide-y divide-slate-700">
+            <tr><td colspan="8" class="px-5 py-10 text-center text-slate-500">Cargando usuarios...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentUserId = null;
+
+    const rolBadge = {
+      admin: 'bg-blue-900/60 text-blue-400 border border-blue-800',
+      capturista: 'bg-slate-700 text-slate-300 border border-slate-600'
+    };
+
+    async function checkAuth() {
+      const res = await fetch('/api/auth/me');
+      if (!res.ok) { window.location.href = '/login.html'; return; }
+      const data = await res.json();
+      if (data.rol !== 'admin') { window.location.href = '/dashboard.html'; return; }
+      currentUserId = data.id;
+      document.getElementById('user-name').textContent = data.nombre;
+    }
+
+    async function loadUsuarios() {
+      const tbody = document.getElementById('users-table');
+      try {
+        const res = await fetch('/api/users');
+        if (!res.ok) {
+          tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-10 text-center text-slate-500">No se pudo cargar la informacion.</td></tr>';
+          return;
+        }
+        const usuarios = await res.json();
+
+        if (usuarios.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-10 text-center text-slate-500">No hay usuarios registrados.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = usuarios.map(u => `
+          <tr class="hover:bg-slate-700/30 transition">
+            <td class="px-5 py-4 text-white font-medium">${u.nombre} ${u.apellidos || ''}</td>
+            <td class="px-5 py-4 text-slate-300">${u.email}</td>
+            <td class="px-5 py-4">
+              <span class="text-xs px-2.5 py-1 rounded-full font-medium ${rolBadge[u.rol] || ''}">
+                ${u.rol.charAt(0).toUpperCase() + u.rol.slice(1)}
+              </span>
+            </td>
+            <td class="px-5 py-4 text-center text-green-400 font-semibold">${u.vigentes}</td>
+            <td class="px-5 py-4 text-center text-yellow-400 font-semibold">${u.revocados}</td>
+            <td class="px-5 py-4 text-center text-red-400 font-semibold">${u.cancelados}</td>
+            <td class="px-5 py-4 text-center text-white font-semibold">${u.total}</td>
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-2 flex-wrap">
+                <a href="/repository.html?usuario_id=${u.id}"
+                  class="px-2.5 py-1 bg-blue-700/50 hover:bg-blue-700 border border-blue-700 text-blue-300 text-xs rounded-lg transition">
+                  Ver documentos
+                </a>
+                ${u.id === currentUserId ? '' : `
+                <button onclick="eliminarUsuario(${u.id}, ${JSON.stringify(u.nombre + ' ' + (u.apellidos || ''))})"
+                  class="px-2.5 py-1 bg-red-900/40 hover:bg-red-800/60 border border-red-800 text-red-300 text-xs rounded-lg transition">
+                  Eliminar
+                </button>`}
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+        tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-10 text-center text-slate-500">Error de conexion.</td></tr>';
+      }
+    }
+
+    async function eliminarUsuario(id, nombreCompleto) {
+      if (!confirm(`Estas seguro de eliminar a ${nombreCompleto.trim()}? Esta accion no se puede deshacer.`)) return;
+
+      try {
+        const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) {
+          await loadUsuarios();
+        } else {
+          alert(data.error || 'Error al eliminar el usuario.');
+        }
+      } catch (err) {
+        alert('Error de conexion.');
+      }
+    }
+
+    async function logout() {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    checkAuth().then(loadUsuarios);
+  </script>
+</body>
+</html>

@@ -159,13 +159,15 @@ router.post('/', requireAuth, upload.single('pdf'), async (req, res) => {
 router.get('/', requireAuth, async (req, res) => {
   try {
     const esAdmin = req.session.userRol === 'admin';
-    const query = `SELECT d.*, u.nombre AS usuario_nombre
+    const filtroUsuarioId = esAdmin && req.query.usuario_id ? req.query.usuario_id : (esAdmin ? null : req.session.userId);
+
+    const query = `SELECT d.*, u.nombre AS usuario_nombre, u.apellidos AS usuario_apellidos
        FROM documentos d
        JOIN usuarios u ON d.usuario_id = u.id
-       ${esAdmin ? '' : 'WHERE d.usuario_id = ?'}
+       ${filtroUsuarioId ? 'WHERE d.usuario_id = ?' : ''}
        ORDER BY d.created_at DESC`;
 
-    const [rows] = await db.execute(query, esAdmin ? [] : [req.session.userId]);
+    const [rows] = await db.execute(query, filtroUsuarioId ? [filtroUsuarioId] : []);
     res.json(rows);
   } catch (err) {
     console.error('Error al obtener documentos:', err);
@@ -177,7 +179,7 @@ router.get('/', requireAuth, async (req, res) => {
 router.get('/:id', requireAuth, async (req, res) => {
   try {
     const [rows] = await db.execute(
-      `SELECT d.*, u.nombre AS usuario_nombre
+      `SELECT d.*, u.nombre AS usuario_nombre, u.apellidos AS usuario_apellidos
        FROM documentos d
        JOIN usuarios u ON d.usuario_id = u.id
        WHERE d.id = ?`,

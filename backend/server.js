@@ -8,6 +8,7 @@ const db = require('./config/database');
 const authRoutes = require('./routes/auth');
 const documentRoutes = require('./routes/documents');
 const validateRoutes = require('./routes/validate');
+const usersRoutes = require('./routes/users');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +40,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/validate', validateRoutes);
+app.use('/api/users', usersRoutes);
 
 // Ruta de validacion publica - sirve la pagina HTML
 app.get('/validar/:folio', (req, res) => {

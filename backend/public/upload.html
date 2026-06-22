@@ -26,6 +26,7 @@
         <a href="/dashboard.html" class="text-sm text-slate-300 hover:text-white transition">Panel</a>
         <a href="/upload.html" class="text-sm text-blue-400 font-medium">Subir Documento</a>
         <a href="/repository.html" class="text-sm text-slate-300 hover:text-white transition">Repositorio</a>
+        <a href="/usuarios.html" id="nav-usuarios" class="hidden text-sm text-slate-300 hover:text-white transition">Usuarios</a>
         <span class="text-slate-600">|</span>
         <span id="user-name" class="text-sm text-slate-400"></span>
         <button onclick="logout()" class="text-sm text-red-400 hover:text-red-300 transition font-medium">Cerrar Sesion</button>
@@ -179,6 +180,9 @@
       if (!res.ok) { window.location.href = '/login.html'; return; }
       const data = await res.json();
       document.getElementById('user-name').textContent = data.nombre;
+      if (data.rol === 'admin') {
+        document.getElementById('nav-usuarios').classList.remove('hidden');
+      }
     }
 
     const dropZone = document.getElementById('drop-zone');
