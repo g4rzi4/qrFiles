@@ -227,6 +227,61 @@ router.put('/:id/estado', requireAuth, async (req, res) => {
   }
 });
 
+// PUT /api/documents/:id - Editar metadatos del documento
+router.put('/:id', requireAuth, async (req, res) => {
+  try {
+    const { titulo, tipo_documento, area_emisora } = req.body;
+
+    if (!titulo || !tipo_documento || !area_emisora) {
+      return res.status(400).json({ error: 'Titulo, tipo de documento y area emisora son requeridos.' });
+    }
+
+    const [rows] = await db.execute('SELECT id FROM documentos WHERE id = ?', [req.params.id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Documento no encontrado.' });
+    }
+
+    await db.execute(
+      'UPDATE documentos SET titulo = ?, tipo_documento = ?, area_emisora = ? WHERE id = ?',
+      [titulo, tipo_documento, area_emisora, req.params.id]
+    );
+
+    res.json({ message: 'Documento actualizado correctamente.' });
+  } catch (err) {
+    console.error('Error al actualizar documento:', err);
+    res.status(500).json({ error: 'Error al actualizar el documento.' });
+  }
+});
+
+// DELETE /api/documents/:id - Eliminar documento
+router.delete('/:id', requireAuth, async (req, res) => {
+  try {
+    const [rows] = await db.execute('SELECT * FROM documentos WHERE id = ?', [req.params.id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Documento no encontrado.' });
+    }
+
+    const doc = rows[0];
+
+    await db.execute('DELETE FROM documentos WHERE id = ?', [req.params.id]);
+
+    [
+      ['../uploads/originals', doc.pdf_original_path],
+      ['../uploads/qr_pdfs', doc.pdf_qr_path],
+      ['../uploads/qr_images', doc.qr_image_path]
+    ].forEach(([dir, filename]) => {
+      if (!filename) return;
+      const filePath = path.join(__dirname, dir, filename);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    });
+
+    res.json({ message: 'Documento eliminado correctamente.' });
+  } catch (err) {
+    console.error('Error al eliminar documento:', err);
+    res.status(500).json({ error: 'Error al eliminar el documento.' });
+  }
+});
+
 // GET /api/documents/:id/download - Descargar PDF con QR
 router.get('/:id/download', requireAuth, async (req, res) => {
   try {

@@ -134,6 +134,48 @@
     </div>
   </div>
 
+  <!-- Modal de edicion -->
+  <div id="modal-editar" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+    <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 w-full max-w-md shadow-2xl">
+      <h3 class="text-lg font-semibold text-white mb-1">Editar Documento</h3>
+      <p id="edit-folio" class="text-slate-400 text-sm mb-5"></p>
+      <div class="space-y-4 mb-5">
+        <div>
+          <label class="block text-sm text-slate-300 mb-1.5">Titulo</label>
+          <input type="text" id="edit-titulo"
+            class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm
+                   placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+        </div>
+        <div>
+          <label class="block text-sm text-slate-300 mb-1.5">Tipo de Documento</label>
+          <select id="edit-tipo"
+            class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm
+                   focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            <option value="Contrato">Contrato</option>
+            <option value="Convenio">Convenio</option>
+            <option value="Acta">Acta</option>
+            <option value="Resolucion">Resolucion</option>
+            <option value="Oficio">Oficio</option>
+            <option value="Certificado">Certificado</option>
+            <option value="Dictamen">Dictamen</option>
+            <option value="Constancia">Constancia</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-300 mb-1.5">Area Emisora</label>
+          <input type="text" id="edit-area"
+            class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm
+                   placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="closeEditModal()" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium transition">Cancelar</button>
+        <button onclick="confirmarEdicion()" class="flex-1 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-semibold transition">Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let allDocs = [];
     let currentDocId = null;
@@ -202,6 +244,14 @@
                 class="px-2.5 py-1 bg-orange-900/40 hover:bg-orange-800/60 border border-orange-800 text-orange-300 text-xs rounded-lg transition">
                 Estado
               </button>
+              <button onclick='openEditModal(${d.id}, ${JSON.stringify(d.titulo)}, ${JSON.stringify(d.tipo_documento)}, ${JSON.stringify(d.area_emisora)})'
+                class="px-2.5 py-1 bg-indigo-900/40 hover:bg-indigo-800/60 border border-indigo-800 text-indigo-300 text-xs rounded-lg transition">
+                Editar
+              </button>
+              <button onclick="eliminarDocumento(${d.id}, '${d.folio}')"
+                class="px-2.5 py-1 bg-red-900/40 hover:bg-red-800/60 border border-red-800 text-red-300 text-xs rounded-lg transition">
+                Eliminar
+              </button>
             </div>
           </td>
         </tr>
@@ -258,6 +308,62 @@
         } else {
           const data = await res.json();
           alert(data.error || 'Error al cambiar estado.');
+        }
+      } catch (err) {
+        alert('Error de conexion.');
+      }
+    }
+
+    function openEditModal(id, titulo, tipo, area) {
+      currentDocId = id;
+      const doc = allDocs.find(d => d.id === id);
+      document.getElementById('edit-folio').textContent = `Folio: ${doc ? doc.folio : ''}`;
+      document.getElementById('edit-titulo').value = titulo;
+      document.getElementById('edit-tipo').value = tipo;
+      document.getElementById('edit-area').value = area;
+      document.getElementById('modal-editar').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('modal-editar').classList.add('hidden');
+      currentDocId = null;
+    }
+
+    async function confirmarEdicion() {
+      const titulo = document.getElementById('edit-titulo').value.trim();
+      const tipo_documento = document.getElementById('edit-tipo').value;
+      const area_emisora = document.getElementById('edit-area').value.trim();
+
+      if (!titulo || !area_emisora) { alert('Titulo y area emisora son requeridos.'); return; }
+
+      try {
+        const res = await fetch(`/api/documents/${currentDocId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ titulo, tipo_documento, area_emisora })
+        });
+        if (res.ok) {
+          closeEditModal();
+          await loadDocs();
+        } else {
+          const data = await res.json();
+          alert(data.error || 'Error al editar el documento.');
+        }
+      } catch (err) {
+        alert('Error de conexion.');
+      }
+    }
+
+    async function eliminarDocumento(id, folio) {
+      if (!confirm(`Estas seguro de eliminar el documento ${folio}? Esta accion no se puede deshacer.`)) return;
+
+      try {
+        const res = await fetch(`/api/documents/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          await loadDocs();
+        } else {
+          const data = await res.json();
+          alert(data.error || 'Error al eliminar el documento.');
         }
       } catch (err) {
         alert('Error de conexion.');
