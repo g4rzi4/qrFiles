@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subir Documento - QRFiles</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-slate-900 text-white">
+
+  <!-- Navbar -->
+  <nav class="bg-slate-800 border-b border-slate-700 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <span class="text-lg font-bold">QRFiles</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/dashboard.html" class="text-sm text-slate-300 hover:text-white transition">Panel</a>
+        <a href="/upload.html" class="text-sm text-blue-400 font-medium">Subir Documento</a>
+        <a href="/repository.html" class="text-sm text-slate-300 hover:text-white transition">Repositorio</a>
+        <span class="text-slate-600">|</span>
+        <span id="user-name" class="text-sm text-slate-400"></span>
+        <button onclick="logout()" class="text-sm text-red-400 hover:text-red-300 transition font-medium">Cerrar Sesion</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-6 py-10">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold">Subir Documento</h1>
+      <p class="text-slate-400 mt-1">Registra un PDF y genera su codigo QR de validacion</p>
+    </div>
+
+    <!-- Formulario -->
+    <div class="bg-slate-800 rounded-2xl border border-slate-700 p-8">
+      <div id="error-msg" class="hidden mb-5 p-4 bg-red-900/50 border border-red-700 text-red-300 rounded-lg text-sm"></div>
+      <div id="success-box" class="hidden mb-5 p-5 bg-green-900/30 border border-green-700 rounded-xl">
+        <p class="font-semibold text-green-400 mb-2">Documento registrado exitosamente</p>
+        <p class="text-sm text-slate-300">Folio: <span id="result-folio" class="text-white font-mono font-semibold"></span></p>
+        <p class="text-sm text-slate-300 mt-1">URL de validacion:</p>
+        <a id="result-url" href="#" target="_blank" class="text-sm text-blue-400 break-all hover:underline"></a>
+        <div class="mt-4 flex gap-3">
+          <button onclick="downloadDoc()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition">
+            Descargar PDF con QR
+          </button>
+          <button onclick="resetForm()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition">
+            Subir otro documento
+          </button>
+        </div>
+      </div>
+
+      <form id="upload-form" class="space-y-6" enctype="multipart/form-data">
+        <!-- Archivo PDF -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Archivo PDF <span class="text-red-400">*</span></label>
+          <div id="drop-zone"
+            class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center cursor-pointer
+                   hover:border-blue-500 hover:bg-blue-900/10 transition">
+            <svg class="w-10 h-10 text-slate-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <p class="text-slate-400 text-sm">Arrastra tu PDF aqui o <span class="text-blue-400">haz clic para seleccionar</span></p>
+            <p class="text-slate-500 text-xs mt-1">Maximo 20 MB</p>
+            <input type="file" id="pdf-input" name="pdf" accept=".pdf" class="hidden" required />
+          </div>
+          <div id="file-info" class="hidden mt-2 flex items-center gap-2 text-sm text-slate-300 bg-slate-700 rounded-lg px-4 py-2">
+            <svg class="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span id="file-name" class="truncate"></span>
+            <button type="button" onclick="clearFile()" class="ml-auto text-slate-500 hover:text-red-400 transition">&#10005;</button>
+          </div>
+        </div>
+
+        <!-- Titulo -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Titulo del documento <span class="text-red-400">*</span></label>
+          <input type="text" id="titulo" name="titulo" required maxlength="200"
+            placeholder="Ej. Convenio de colaboracion 2024"
+            class="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400
+                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+        </div>
+
+        <!-- Tipo de documento -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Tipo de documento <span class="text-red-400">*</span></label>
+          <select id="tipo_documento" name="tipo_documento" required
+            class="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white
+                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+            <option value="" disabled selected>Selecciona un tipo</option>
+            <option value="Contrato">Contrato</option>
+            <option value="Convenio">Convenio</option>
+            <option value="Acta">Acta</option>
+            <option value="Resolucion">Resolucion</option>
+            <option value="Oficio">Oficio</option>
+            <option value="Certificado">Certificado</option>
+            <option value="Dictamen">Dictamen</option>
+            <option value="Constancia">Constancia</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+
+        <!-- Area emisora -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Area emisora / Responsable <span class="text-red-400">*</span></label>
+          <input type="text" id="area_emisora" name="area_emisora" required maxlength="150"
+            placeholder="Ej. Direccion de Recursos Humanos"
+            class="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400
+                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+        </div>
+
+        <!-- Posicion del QR -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-3">Posicion del codigo QR en el PDF</label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <label class="relative cursor-pointer">
+              <input type="radio" name="qr_position" value="superior_izquierda" class="sr-only peer" />
+              <div class="p-3 bg-slate-700 border-2 border-slate-600 rounded-xl text-center text-sm text-slate-300
+                          peer-checked:border-blue-500 peer-checked:bg-blue-900/30 peer-checked:text-blue-300 transition hover:border-slate-500">
+                <div class="text-lg mb-1">↖</div>Superior izquierda
+              </div>
+            </label>
+            <label class="relative cursor-pointer">
+              <input type="radio" name="qr_position" value="superior_derecha" class="sr-only peer" />
+              <div class="p-3 bg-slate-700 border-2 border-slate-600 rounded-xl text-center text-sm text-slate-300
+                          peer-checked:border-blue-500 peer-checked:bg-blue-900/30 peer-checked:text-blue-300 transition hover:border-slate-500">
+                <div class="text-lg mb-1">↗</div>Superior derecha
+              </div>
+            </label>
+            <label class="relative cursor-pointer">
+              <input type="radio" name="qr_position" value="inferior_izquierda" class="sr-only peer" />
+              <div class="p-3 bg-slate-700 border-2 border-slate-600 rounded-xl text-center text-sm text-slate-300
+                          peer-checked:border-blue-500 peer-checked:bg-blue-900/30 peer-checked:text-blue-300 transition hover:border-slate-500">
+                <div class="text-lg mb-1">↙</div>Inferior izquierda
+              </div>
+            </label>
+            <label class="relative cursor-pointer">
+              <input type="radio" name="qr_position" value="inferior_derecha" class="sr-only peer" checked />
+              <div class="p-3 bg-slate-700 border-2 border-blue-500 bg-blue-900/30 rounded-xl text-center text-sm text-blue-300
+                          peer-checked:border-blue-500 peer-checked:bg-blue-900/30 peer-checked:text-blue-300 transition hover:border-slate-500">
+                <div class="text-lg mb-1">↘</div>Inferior derecha
+              </div>
+            </label>
+            <label class="relative cursor-pointer sm:col-span-2">
+              <input type="radio" name="qr_position" value="ultima_inferior_derecha" class="sr-only peer" />
+              <div class="p-3 bg-slate-700 border-2 border-slate-600 rounded-xl text-center text-sm text-slate-300
+                          peer-checked:border-blue-500 peer-checked:bg-blue-900/30 peer-checked:text-blue-300 transition hover:border-slate-500">
+                <div class="text-lg mb-1">📄↘</div>Ultima pagina inf. derecha
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-submit"
+          class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800
+                 disabled:opacity-60 disabled:cursor-not-allowed">
+          Generar QR y Registrar Documento
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    let lastDocId = null;
+
+    async function checkAuth() {
+      const res = await fetch('/api/auth/me');
+      if (!res.ok) { window.location.href = '/login.html'; return; }
+      const data = await res.json();
+      document.getElementById('user-name').textContent = data.nombre;
+    }
+
+    const dropZone = document.getElementById('drop-zone');
+    const pdfInput = document.getElementById('pdf-input');
+
+    dropZone.addEventListener('click', () => pdfInput.click());
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('border-blue-500'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-blue-500'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('border-blue-500');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type === 'application/pdf') {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        pdfInput.files = dt.files;
+        showFile(file.name);
+      }
+    });
+
+    pdfInput.addEventListener('change', () => {
+      if (pdfInput.files[0]) showFile(pdfInput.files[0].name);
+    });
+
+    function showFile(name) {
+      document.getElementById('file-name').textContent = name;
+      document.getElementById('file-info').classList.remove('hidden');
+      dropZone.classList.add('hidden');
+    }
+
+    function clearFile() {
+      pdfInput.value = '';
+      document.getElementById('file-info').classList.add('hidden');
+      dropZone.classList.remove('hidden');
+    }
+
+    document.getElementById('upload-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit');
+      const errorDiv = document.getElementById('error-msg');
+
+      errorDiv.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = 'Procesando...';
+
+      const formData = new FormData(e.target);
+
+      try {
+        const res = await fetch('/api/documents', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (res.ok) {
+          lastDocId = data.documento.id;
+          document.getElementById('result-folio').textContent = data.documento.folio;
+          const url = data.documento.validacion_url;
+          const urlEl = document.getElementById('result-url');
+          urlEl.textContent = url;
+          urlEl.href = url;
+          document.getElementById('upload-form').classList.add('hidden');
+          document.getElementById('success-box').classList.remove('hidden');
+        } else {
+          errorDiv.textContent = data.error || 'Error al procesar el documento.';
+          errorDiv.classList.remove('hidden');
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Error de conexion.';
+        errorDiv.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Generar QR y Registrar Documento';
+      }
+    });
+
+    function downloadDoc() {
+      if (lastDocId) window.open(`/api/documents/${lastDocId}/download`, '_blank');
+    }
+
+    function resetForm() {
+      lastDocId = null;
+      document.getElementById('upload-form').reset();
+      document.getElementById('upload-form').classList.remove('hidden');
+      document.getElementById('success-box').classList.add('hidden');
+      document.getElementById('file-info').classList.add('hidden');
+      dropZone.classList.remove('hidden');
+    }
+
+    async function logout() {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>

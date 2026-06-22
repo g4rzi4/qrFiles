@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  app:
+    build: ./backend
+    container_name: qrfiles_app
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=database
+      - DB_USER=qruser
+      - DB_PASSWORD=qrpassword
+      - DB_NAME=qrfiles_db
+      - SESSION_SECRET=qrfiles_super_secret_2024
+      - APP_URL=http://localhost:3000
+      - PORT=3000
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - qrfiles_network
+
+  database:
+    image: mysql:8.0
+    container_name: qrfiles_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=qrfiles_db
+      - MYSQL_USER=qruser
+      - MYSQL_PASSWORD=qrpassword
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - qrfiles_network
+
+volumes:
+  uploads_data:
+  mysql_data:
+
+networks:
+  qrfiles_network:
+    driver: bridge

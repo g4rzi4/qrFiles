@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar Sesion - QRFiles</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <!-- Logo / Header -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4 shadow-lg">
+        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <h1 class="text-3xl font-bold text-white">QRFiles</h1>
+      <p class="text-slate-400 mt-1">Sistema de Validacion Documental</p>
+    </div>
+
+    <!-- Card de Login -->
+    <div class="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8">
+      <h2 class="text-xl font-semibold text-white mb-6">Iniciar Sesion</h2>
+
+      <div id="error-msg" class="hidden mb-4 p-3 bg-red-900/50 border border-red-700 text-red-300 rounded-lg text-sm"></div>
+
+      <form id="login-form" class="space-y-5">
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Correo electronico</label>
+          <input type="email" id="email" required
+            placeholder="admin@sistema.com"
+            class="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400
+                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-1.5">Contrasena</label>
+          <input type="password" id="password" required
+            placeholder="••••••••"
+            class="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400
+                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+        </div>
+        <button type="submit" id="btn-login"
+          class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800
+                 disabled:opacity-60 disabled:cursor-not-allowed">
+          Iniciar Sesion
+        </button>
+      </form>
+
+      <div class="mt-6 pt-5 border-t border-slate-700">
+        <p class="text-xs text-slate-500 text-center">Usuarios de prueba:</p>
+        <div class="mt-2 space-y-1">
+          <p class="text-xs text-slate-400 text-center">Admin: <span class="text-blue-400">admin@sistema.com</span> / <span class="text-blue-400">admin123</span></p>
+          <p class="text-xs text-slate-400 text-center">Capturista: <span class="text-blue-400">capturista@sistema.com</span> / <span class="text-blue-400">capturista123</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btn-login');
+      const errorDiv = document.getElementById('error-msg');
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      btn.disabled = true;
+      btn.textContent = 'Ingresando...';
+      errorDiv.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          window.location.href = '/dashboard.html';
+        } else {
+          errorDiv.textContent = data.error || 'Error al iniciar sesion.';
+          errorDiv.classList.remove('hidden');
+          btn.disabled = false;
+          btn.textContent = 'Iniciar Sesion';
+        }
+      } catch (err) {
+        errorDiv.textContent = 'Error de conexion. Intenta de nuevo.';
+        errorDiv.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Iniciar Sesion';
+      }
+    });
+  </script>
+</body>
+</html>

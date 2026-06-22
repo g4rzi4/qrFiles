@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Repositorio - QRFiles</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="min-h-screen bg-slate-900 text-white">
+
+  <!-- Navbar -->
+  <nav class="bg-slate-800 border-b border-slate-700 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <span class="text-lg font-bold">QRFiles</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/dashboard.html" class="text-sm text-slate-300 hover:text-white transition">Panel</a>
+        <a href="/upload.html" class="text-sm text-slate-300 hover:text-white transition">Subir Documento</a>
+        <a href="/repository.html" class="text-sm text-blue-400 font-medium">Repositorio</a>
+        <span class="text-slate-600">|</span>
+        <span id="user-name" class="text-sm text-slate-400"></span>
+        <button onclick="logout()" class="text-sm text-red-400 hover:text-red-300 transition font-medium">Cerrar Sesion</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-6 py-10">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold">Repositorio de Documentos</h1>
+        <p class="text-slate-400 mt-1">Consulta, descarga y gestiona el estado de los documentos</p>
+      </div>
+      <a href="/upload.html"
+        class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-semibold transition flex items-center gap-2">
+        <span>+</span> Nuevo Documento
+      </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-slate-800 rounded-2xl border border-slate-700 p-5 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <input type="text" id="search-input" placeholder="Buscar por titulo o folio..."
+          class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm" />
+        <select id="filter-estado"
+          class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+          <option value="">Todos los estados</option>
+          <option value="vigente">Vigentes</option>
+          <option value="revocado">Revocados</option>
+          <option value="cancelado">Cancelados</option>
+        </select>
+        <select id="filter-tipo"
+          class="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+          <option value="">Todos los tipos</option>
+          <option value="Contrato">Contrato</option>
+          <option value="Convenio">Convenio</option>
+          <option value="Acta">Acta</option>
+          <option value="Resolucion">Resolucion</option>
+          <option value="Oficio">Oficio</option>
+          <option value="Certificado">Certificado</option>
+          <option value="Dictamen">Dictamen</option>
+          <option value="Constancia">Constancia</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tabla de documentos -->
+    <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-700 text-left">
+              <th class="px-5 py-3.5 text-slate-400 font-medium">Folio</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium">Titulo</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium">Tipo</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium">Area Emisora</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium">Fecha</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium">Estado</th>
+              <th class="px-5 py-3.5 text-slate-400 font-medium">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="docs-table" class="divide-y divide-slate-700">
+            <tr><td colspan="7" class="px-5 py-10 text-center text-slate-500">Cargando documentos...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="empty-state" class="hidden px-5 py-12 text-center">
+        <p class="text-slate-500">No se encontraron documentos.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de cambio de estado -->
+  <div id="modal-estado" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+    <div class="bg-slate-800 rounded-2xl border border-slate-700 p-6 w-full max-w-md shadow-2xl">
+      <h3 class="text-lg font-semibold text-white mb-1">Cambiar Estado del Documento</h3>
+      <p id="modal-folio" class="text-slate-400 text-sm mb-5"></p>
+      <div class="space-y-3 mb-5">
+        <label class="flex items-center gap-3 p-3 bg-slate-700 rounded-xl cursor-pointer hover:bg-slate-600 transition">
+          <input type="radio" name="nuevo_estado" value="vigente" class="accent-green-500" />
+          <span class="text-sm"><span class="font-medium text-green-400">Vigente</span> — Documento valido y activo</span>
+        </label>
+        <label class="flex items-center gap-3 p-3 bg-slate-700 rounded-xl cursor-pointer hover:bg-slate-600 transition">
+          <input type="radio" name="nuevo_estado" value="revocado" class="accent-yellow-500" />
+          <span class="text-sm"><span class="font-medium text-yellow-400">Revocado</span> — Documento retirado</span>
+        </label>
+        <label class="flex items-center gap-3 p-3 bg-slate-700 rounded-xl cursor-pointer hover:bg-slate-600 transition">
+          <input type="radio" name="nuevo_estado" value="cancelado" class="accent-red-500" />
+          <span class="text-sm"><span class="font-medium text-red-400">Cancelado</span> — Documento anulado</span>
+        </label>
+      </div>
+      <div class="mb-5">
+        <label class="block text-sm text-slate-300 mb-1.5">Observacion (opcional)</label>
+        <textarea id="modal-observacion" rows="2" placeholder="Motivo del cambio..."
+          class="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm
+                 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"></textarea>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="closeModal()" class="flex-1 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium transition">Cancelar</button>
+        <button onclick="confirmarCambioEstado()" class="flex-1 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-sm font-semibold transition">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allDocs = [];
+    let currentDocId = null;
+
+    const estadoBadge = {
+      vigente: 'bg-green-900/60 text-green-400 border border-green-800',
+      revocado: 'bg-yellow-900/60 text-yellow-400 border border-yellow-800',
+      cancelado: 'bg-red-900/60 text-red-400 border border-red-800'
+    };
+
+    async function checkAuth() {
+      const res = await fetch('/api/auth/me');
+      if (!res.ok) { window.location.href = '/login.html'; return; }
+      const data = await res.json();
+      document.getElementById('user-name').textContent = data.nombre;
+    }
+
+    async function loadDocs() {
+      try {
+        const res = await fetch('/api/documents');
+        if (!res.ok) return;
+        allDocs = await res.json();
+        renderTable(allDocs);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderTable(docs) {
+      const tbody = document.getElementById('docs-table');
+      if (docs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-5 py-10 text-center text-slate-500">No se encontraron documentos.</td></tr>';
+        return;
+      }
+
+      const appUrl = window.location.origin;
+
+      tbody.innerHTML = docs.map(d => `
+        <tr class="hover:bg-slate-700/30 transition">
+          <td class="px-5 py-4 font-mono text-xs text-blue-400">${d.folio}</td>
+          <td class="px-5 py-4 text-white max-w-xs">
+            <p class="truncate font-medium">${d.titulo}</p>
+            <p class="text-xs text-slate-500 mt-0.5">Por: ${d.usuario_nombre}</p>
+          </td>
+          <td class="px-5 py-4 text-slate-300">${d.tipo_documento}</td>
+          <td class="px-5 py-4 text-slate-300 max-w-[160px]">
+            <p class="truncate">${d.area_emisora}</p>
+          </td>
+          <td class="px-5 py-4 text-slate-400 whitespace-nowrap">${new Date(d.created_at).toLocaleDateString('es-MX')}</td>
+          <td class="px-5 py-4">
+            <span class="text-xs px-2.5 py-1 rounded-full font-medium ${estadoBadge[d.estado] || ''}">
+              ${d.estado.charAt(0).toUpperCase() + d.estado.slice(1)}
+            </span>
+          </td>
+          <td class="px-5 py-4">
+            <div class="flex items-center gap-2 flex-wrap">
+              <a href="/api/documents/${d.id}/download" target="_blank"
+                class="px-2.5 py-1 bg-blue-700/50 hover:bg-blue-700 border border-blue-700 text-blue-300 text-xs rounded-lg transition">
+                Descargar
+              </a>
+              <a href="${appUrl}/validar/${d.folio}" target="_blank"
+                class="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-300 text-xs rounded-lg transition">
+                Validar
+              </a>
+              <button onclick="openModal(${d.id}, '${d.folio}', '${d.estado}')"
+                class="px-2.5 py-1 bg-orange-900/40 hover:bg-orange-800/60 border border-orange-800 text-orange-300 text-xs rounded-lg transition">
+                Estado
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterDocs() {
+      const search = document.getElementById('search-input').value.toLowerCase();
+      const estado = document.getElementById('filter-estado').value;
+      const tipo = document.getElementById('filter-tipo').value;
+
+      const filtered = allDocs.filter(d => {
+        const matchSearch = !search || d.folio.toLowerCase().includes(search) || d.titulo.toLowerCase().includes(search);
+        const matchEstado = !estado || d.estado === estado;
+        const matchTipo = !tipo || d.tipo_documento === tipo;
+        return matchSearch && matchEstado && matchTipo;
+      });
+      renderTable(filtered);
+    }
+
+    document.getElementById('search-input').addEventListener('input', filterDocs);
+    document.getElementById('filter-estado').addEventListener('change', filterDocs);
+    document.getElementById('filter-tipo').addEventListener('change', filterDocs);
+
+    function openModal(id, folio, estadoActual) {
+      currentDocId = id;
+      document.getElementById('modal-folio').textContent = `Folio: ${folio} — Estado actual: ${estadoActual}`;
+      const radios = document.querySelectorAll('input[name="nuevo_estado"]');
+      radios.forEach(r => { r.checked = r.value === estadoActual; });
+      document.getElementById('modal-observacion').value = '';
+      document.getElementById('modal-estado').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-estado').classList.add('hidden');
+      currentDocId = null;
+    }
+
+    async function confirmarCambioEstado() {
+      const estado = document.querySelector('input[name="nuevo_estado"]:checked')?.value;
+      const observacion = document.getElementById('modal-observacion').value;
+
+      if (!estado) { alert('Selecciona un estado.'); return; }
+
+      try {
+        const res = await fetch(`/api/documents/${currentDocId}/estado`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ estado, observacion })
+        });
+        if (res.ok) {
+          closeModal();
+          await loadDocs();
+        } else {
+          const data = await res.json();
+          alert(data.error || 'Error al cambiar estado.');
+        }
+      } catch (err) {
+        alert('Error de conexion.');
+      }
+    }
+
+    async function logout() {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    checkAuth().then(loadDocs);
+  </script>
+</body>
+</html>
