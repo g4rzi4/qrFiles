@@ -5,32 +5,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panel Principal - QRFiles</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <script>
+    (function () {
+      const saved = localStorage.getItem('qrfiles-theme');
+      const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="min-h-screen bg-slate-900 text-white">
+<body class="min-h-screen bg-gradient-to-br from-[#EFEAD8] via-[#F2EEDE] to-[#E3EBE0] dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 text-[#2F3A2D] dark:text-stone-50">
 
   <!-- Navbar -->
-  <nav class="bg-slate-800 border-b border-slate-700 px-6 py-4">
+  <nav class="bg-[#FBF8EE] dark:bg-stone-900 border-b border-[#D0C9C0] dark:border-stone-800 px-6 py-4">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
+        <div class="w-9 h-9 bg-[#5F7161] dark:bg-orange-500 rounded-xl flex items-center justify-center">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
         </div>
-        <span class="text-lg font-bold">QRFiles</span>
+        <span class="text-lg font-bold text-[#2F3A2D] dark:text-white">QRFiles</span>
       </div>
       <div class="flex items-center gap-4">
-        <a href="/dashboard.html" class="text-sm text-blue-400 font-medium">Panel</a>
-        <a href="/upload.html" class="text-sm text-slate-300 hover:text-white transition">Subir Documento</a>
-        <a href="/repository.html" class="text-sm text-slate-300 hover:text-white transition">Repositorio</a>
-        <a href="/usuarios.html" id="nav-usuarios" class="hidden text-sm text-slate-300 hover:text-white transition">Usuarios</a>
-        <span class="text-slate-600">|</span>
-        <span id="user-name" class="text-sm text-slate-400"></span>
+        <a href="/dashboard.html" class="text-sm text-[#5F7161] dark:text-orange-400 font-medium">Panel</a>
+        <a href="/upload.html" class="text-sm text-[#4C5C4E] dark:text-stone-300 hover:text-[#2F3A2D] dark:hover:text-white transition">Subir Documento</a>
+        <a href="/repository.html" class="text-sm text-[#4C5C4E] dark:text-stone-300 hover:text-[#2F3A2D] dark:hover:text-white transition">Repositorio</a>
+        <a href="/usuarios.html" id="nav-usuarios" class="hidden text-sm text-[#4C5C4E] dark:text-stone-300 hover:text-[#2F3A2D] dark:hover:text-white transition">Usuarios</a>
+        <span class="text-[#D0C9C0] dark:text-stone-700">|</span>
+        <button id="theme-toggle" type="button" aria-label="Cambiar tema"
+          class="p-2 rounded-lg text-[#5F7161] dark:text-stone-400 hover:bg-[#E3DDC8] dark:hover:bg-stone-800 transition cursor-pointer">
+          <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"/>
+          </svg>
+          <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
+        <span id="user-name" class="text-sm text-[#5F7161] dark:text-stone-400"></span>
         <button onclick="logout()"
-          class="text-sm text-red-400 hover:text-red-300 transition font-medium">
+          class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition font-medium">
           Cerrar Sesion
         </button>
       </div>
@@ -41,71 +58,76 @@
   <main class="max-w-7xl mx-auto px-6 py-10">
     <div class="mb-10">
       <h1 class="text-3xl font-bold">Panel Principal</h1>
-      <p class="text-slate-400 mt-1">Resumen del sistema de validacion documental</p>
+      <p class="text-[#5F7161] dark:text-stone-400 mt-1">Resumen del sistema de validacion documental</p>
     </div>
 
     <!-- Tarjetas de estadisticas -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-      <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700">
-        <p class="text-slate-400 text-sm mb-1">Total Documentos</p>
-        <p class="text-4xl font-bold text-white" id="stat-total">-</p>
+      <div class="bg-[#FBF8EE] dark:bg-stone-900 rounded-2xl p-6 border border-[#D0C9C0] dark:border-stone-800">
+        <p class="text-[#5F7161] dark:text-stone-400 text-sm mb-1">Total Documentos</p>
+        <p class="text-4xl font-bold text-[#2F3A2D] dark:text-white" id="stat-total">-</p>
       </div>
-      <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700">
-        <p class="text-slate-400 text-sm mb-1">Vigentes</p>
-        <p class="text-4xl font-bold text-green-400" id="stat-vigentes">-</p>
+      <div class="bg-[#FBF8EE] dark:bg-stone-900 rounded-2xl p-6 border border-[#D0C9C0] dark:border-stone-800">
+        <p class="text-[#5F7161] dark:text-stone-400 text-sm mb-1">Vigentes</p>
+        <p class="text-4xl font-bold text-emerald-600 dark:text-emerald-400" id="stat-vigentes">-</p>
       </div>
-      <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700">
-        <p class="text-slate-400 text-sm mb-1">Revocados</p>
-        <p class="text-4xl font-bold text-yellow-400" id="stat-revocados">-</p>
+      <div class="bg-[#FBF8EE] dark:bg-stone-900 rounded-2xl p-6 border border-[#D0C9C0] dark:border-stone-800">
+        <p class="text-[#5F7161] dark:text-stone-400 text-sm mb-1">Revocados</p>
+        <p class="text-4xl font-bold text-amber-600 dark:text-amber-400" id="stat-revocados">-</p>
       </div>
-      <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700">
-        <p class="text-slate-400 text-sm mb-1">Cancelados</p>
-        <p class="text-4xl font-bold text-red-400" id="stat-cancelados">-</p>
+      <div class="bg-[#FBF8EE] dark:bg-stone-900 rounded-2xl p-6 border border-[#D0C9C0] dark:border-stone-800">
+        <p class="text-[#5F7161] dark:text-stone-400 text-sm mb-1">Cancelados</p>
+        <p class="text-4xl font-bold text-red-600 dark:text-red-400" id="stat-cancelados">-</p>
       </div>
     </div>
 
     <!-- Acciones rapidas -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
       <a href="/upload.html"
-        class="group bg-blue-600 hover:bg-blue-700 rounded-2xl p-6 flex items-center gap-4 transition shadow-lg">
-        <div class="w-12 h-12 bg-blue-500 group-hover:bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+        class="group bg-[#5F7161] hover:bg-[#4C5C4E] dark:bg-orange-500 dark:hover:bg-orange-400 rounded-2xl p-6 flex items-center gap-4 transition shadow-lg">
+        <div class="w-12 h-12 bg-[#6D8B74] group-hover:bg-[#7C9883] dark:bg-orange-400 dark:group-hover:bg-orange-300 rounded-xl flex items-center justify-center flex-shrink-0">
           <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
         </div>
         <div>
           <p class="font-semibold text-white text-lg">Subir Documento</p>
-          <p class="text-blue-200 text-sm">Registra un nuevo PDF con QR</p>
+          <p class="text-[#E3EBE0] dark:text-orange-50 text-sm">Registra un nuevo PDF con QR</p>
         </div>
       </a>
       <a href="/repository.html"
-        class="group bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-2xl p-6 flex items-center gap-4 transition">
-        <div class="w-12 h-12 bg-slate-700 group-hover:bg-slate-600 rounded-xl flex items-center justify-center flex-shrink-0">
-          <svg class="w-6 h-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        class="group bg-[#FBF8EE] dark:bg-stone-900 hover:bg-[#EFEAD8] dark:hover:bg-stone-800 border border-[#D0C9C0] dark:border-stone-800 rounded-2xl p-6 flex items-center gap-4 transition">
+        <div class="w-12 h-12 bg-[#E3DDC8] dark:bg-stone-800 group-hover:bg-[#D6CFB8] dark:group-hover:bg-stone-700 rounded-xl flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6 text-[#4C5C4E] dark:text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
           </svg>
         </div>
         <div>
-          <p class="font-semibold text-white text-lg">Repositorio</p>
-          <p class="text-slate-400 text-sm">Consulta y gestiona documentos</p>
+          <p class="font-semibold text-[#2F3A2D] dark:text-white text-lg">Repositorio</p>
+          <p class="text-[#5F7161] dark:text-stone-400 text-sm">Consulta y gestiona documentos</p>
         </div>
       </a>
     </div>
 
     <!-- Ultimos documentos registrados -->
-    <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
-      <div class="px-6 py-4 border-b border-slate-700 flex items-center justify-between">
-        <h2 class="font-semibold text-white">Ultimos documentos registrados</h2>
-        <a href="/repository.html" class="text-sm text-blue-400 hover:text-blue-300">Ver todos</a>
+    <div class="bg-[#FBF8EE] dark:bg-stone-900 rounded-2xl border border-[#D0C9C0] dark:border-stone-800 overflow-hidden">
+      <div class="px-6 py-4 border-b border-[#D0C9C0] dark:border-stone-800 flex items-center justify-between">
+        <h2 class="font-semibold text-[#2F3A2D] dark:text-white">Ultimos documentos registrados</h2>
+        <a href="/repository.html" class="text-sm text-[#5F7161] dark:text-orange-400 hover:text-[#4C5C4E] dark:hover:text-orange-300">Ver todos</a>
       </div>
-      <div id="recent-docs" class="divide-y divide-slate-700">
-        <div class="px-6 py-8 text-center text-slate-500">Cargando...</div>
+      <div id="recent-docs" class="divide-y divide-[#D0C9C0] dark:divide-stone-800">
+        <div class="px-6 py-8 text-center text-[#6D8B74] dark:text-stone-500">Cargando...</div>
       </div>
     </div>
   </main>
 
   <script>
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('qrfiles-theme', isDark ? 'dark' : 'light');
+    });
+
     async function checkAuth() {
       const res = await fetch('/api/auth/me');
       if (!res.ok) { window.location.href = '/login.html'; return; }
@@ -131,28 +153,28 @@
         const recent = docs.slice(0, 5);
 
         if (recent.length === 0) {
-          container.innerHTML = '<div class="px-6 py-8 text-center text-slate-500">No hay documentos registrados aun.</div>';
+          container.innerHTML = '<div class="px-6 py-8 text-center text-[#6D8B74] dark:text-stone-500">No hay documentos registrados aun.</div>';
           return;
         }
 
         const estadoBadge = {
-          vigente: 'bg-green-900/50 text-green-400 border border-green-800',
-          revocado: 'bg-yellow-900/50 text-yellow-400 border border-yellow-800',
-          cancelado: 'bg-red-900/50 text-red-400 border border-red-800'
+          vigente: 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800',
+          revocado: 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/40 dark:text-amber-400 dark:border-amber-800',
+          cancelado: 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800'
         };
 
         container.innerHTML = recent.map(d => `
-          <div class="px-6 py-4 flex items-center justify-between hover:bg-slate-700/30 transition">
+          <div class="px-6 py-4 flex items-center justify-between hover:bg-[#EFEAD8] dark:hover:bg-stone-800/50 transition">
             <div class="flex-1 min-w-0">
-              <p class="font-medium text-white truncate">${d.titulo}</p>
-              <p class="text-sm text-slate-400">${d.folio} &middot; ${d.tipo_documento} &middot; ${d.area_emisora}</p>
-              <p class="text-xs text-slate-500 mt-0.5">Por: ${d.usuario_nombre} ${d.usuario_apellidos || ''}</p>
+              <p class="font-medium text-[#2F3A2D] dark:text-white truncate">${d.titulo}</p>
+              <p class="text-sm text-[#5F7161] dark:text-stone-400">${d.folio} &middot; ${d.tipo_documento} &middot; ${d.area_emisora}</p>
+              <p class="text-xs text-[#6D8B74] dark:text-stone-500 mt-0.5">Por: ${d.usuario_nombre} ${d.usuario_apellidos || ''}</p>
             </div>
             <div class="flex items-center gap-3 ml-4">
               <span class="text-xs px-2.5 py-1 rounded-full font-medium ${estadoBadge[d.estado] || ''}">
                 ${d.estado.charAt(0).toUpperCase() + d.estado.slice(1)}
               </span>
-              <span class="text-xs text-slate-500">${new Date(d.created_at).toLocaleDateString('es-MX')}</span>
+              <span class="text-xs text-[#6D8B74] dark:text-stone-500">${new Date(d.created_at).toLocaleDateString('es-MX')}</span>
             </div>
           </div>
         `).join('');

@@ -5,61 +5,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Iniciar Sesion - QRFiles</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <script>
+    (function () {
+      const saved = localStorage.getItem('qrfiles-theme');
+      const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4">
+<body class="min-h-screen bg-gradient-to-br from-[#EFEAD8] via-[#FBF8EE] to-[#D9E5D6] dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 flex items-center justify-center p-4">
+
+  <button id="theme-toggle" type="button" aria-label="Cambiar tema"
+    class="fixed top-4 right-4 p-2.5 rounded-lg bg-[#FBF8EE] dark:bg-stone-900 border border-[#D0C9C0] dark:border-stone-800
+           text-[#5F7161] dark:text-stone-400 hover:bg-[#EFEAD8] dark:hover:bg-stone-800 transition cursor-pointer shadow-sm">
+    <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"/>
+    </svg>
+    <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+    </svg>
+  </button>
+
   <div class="w-full max-w-md">
     <!-- Logo / Header -->
     <div class="text-center mb-8">
-      <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4 shadow-lg">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-[#5F7161] dark:bg-orange-500 rounded-2xl mb-4 shadow-lg">
         <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
       </div>
-      <h1 class="text-3xl font-bold text-white">QRFiles</h1>
-      <p class="text-slate-400 mt-1">Sistema de Validacion Documental</p>
+      <h1 class="text-3xl font-bold text-[#2F3A2D] dark:text-white">QRFiles</h1>
+      <p class="text-[#5F7161] dark:text-stone-400 mt-1">Sistema de Validacion Documental</p>
     </div>
 
     <!-- Card -->
-    <div class="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8">
+    <div class="bg-[#FBF8EE] dark:bg-stone-900 rounded-2xl shadow-xl dark:shadow-2xl border border-[#D0C9C0] dark:border-stone-800 p-8">
 
       <!-- Tabs -->
-      <div class="flex gap-2 mb-6 bg-slate-900/60 rounded-xl p-1">
+      <div class="flex gap-2 mb-6 bg-[#E3DDC8] dark:bg-stone-950/60 rounded-xl p-1">
         <button id="tab-login" onclick="showTab('login')"
-          class="flex-1 py-2 rounded-lg text-sm font-semibold transition bg-blue-600 text-white">
+          class="flex-1 py-2 rounded-lg text-sm font-semibold transition bg-[#5F7161] dark:bg-orange-500 text-white">
           Iniciar Sesion
         </button>
         <button id="tab-register" onclick="showTab('register')"
-          class="flex-1 py-2 rounded-lg text-sm font-semibold transition text-slate-400 hover:text-white">
+          class="flex-1 py-2 rounded-lg text-sm font-semibold transition text-[#5F7161] dark:text-stone-400 hover:text-[#2F3A2D] dark:hover:text-white">
           Registrarse
         </button>
       </div>
 
-      <div id="error-msg" class="hidden mb-4 p-3 bg-red-900/50 border border-red-700 text-red-300 rounded-lg text-sm"></div>
-      <div id="success-msg" class="hidden mb-4 p-3 bg-green-900/50 border border-green-700 text-green-300 rounded-lg text-sm"></div>
+      <div id="error-msg" class="hidden mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg text-sm"></div>
+      <div id="success-msg" class="hidden mb-4 p-3 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 rounded-lg text-sm"></div>
 
       <!-- Formulario de Login -->
       <form id="login-form" class="space-y-5">
         <div>
-          <label class="block text-sm font-medium text-slate-300 mb-1.5">Correo electronico</label>
+          <label class="block text-sm font-medium text-[#3F4A3D] dark:text-stone-300 mb-1.5">Correo electronico</label>
           <input type="email" id="email" required
             placeholder="admin@sistema.com"
-            class="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+            class="w-full px-4 py-2.5 bg-[#F5F1E1] dark:bg-stone-800 border border-[#D0C9C0] dark:border-stone-700 rounded-lg text-[#2F3A2D] dark:text-stone-50 placeholder-[#A39B8C] dark:placeholder-stone-500
+                   focus:outline-none focus:ring-2 focus:ring-[#6D8B74] dark:focus:ring-orange-400 focus:border-transparent transition" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-300 mb-1.5">Contrasena</label>
+          <label class="block text-sm font-medium text-[#3F4A3D] dark:text-stone-300 mb-1.5">Contrasena</label>
           <input type="password" id="password" required
             placeholder="••••••••"
-            class="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+            class="w-full px-4 py-2.5 bg-[#F5F1E1] dark:bg-stone-800 border border-[#D0C9C0] dark:border-stone-700 rounded-lg text-[#2F3A2D] dark:text-stone-50 placeholder-[#A39B8C] dark:placeholder-stone-500
+                   focus:outline-none focus:ring-2 focus:ring-[#6D8B74] dark:focus:ring-orange-400 focus:border-transparent transition" />
         </div>
         <button type="submit" id="btn-login"
-          class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition
-                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800
+          class="w-full py-2.5 bg-[#5F7161] hover:bg-[#4C5C4E] dark:bg-orange-500 dark:hover:bg-orange-400 text-white font-semibold rounded-lg transition
+                 focus:outline-none focus:ring-2 focus:ring-[#6D8B74] dark:focus:ring-orange-400 focus:ring-offset-2 focus:ring-offset-[#FBF8EE] dark:focus:ring-offset-stone-900
                  disabled:opacity-60 disabled:cursor-not-allowed">
           Iniciar Sesion
         </button>
@@ -69,68 +89,83 @@
       <form id="register-form" class="hidden space-y-5">
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1.5">Nombre</label>
+            <label class="block text-sm font-medium text-[#3F4A3D] dark:text-stone-300 mb-1.5">Nombre</label>
             <input type="text" id="reg-nombre" required placeholder="Juan"
-              class="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+              class="w-full px-4 py-2.5 bg-[#F5F1E1] dark:bg-stone-800 border border-[#D0C9C0] dark:border-stone-700 rounded-lg text-[#2F3A2D] dark:text-stone-50 placeholder-[#A39B8C] dark:placeholder-stone-500
+                     focus:outline-none focus:ring-2 focus:ring-[#6D8B74] dark:focus:ring-orange-400 focus:border-transparent transition" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-1.5">Apellido(s)</label>
+            <label class="block text-sm font-medium text-[#3F4A3D] dark:text-stone-300 mb-1.5">Apellido(s)</label>
             <input type="text" id="reg-apellidos" required placeholder="Perez Lopez"
-              class="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+              class="w-full px-4 py-2.5 bg-[#F5F1E1] dark:bg-stone-800 border border-[#D0C9C0] dark:border-stone-700 rounded-lg text-[#2F3A2D] dark:text-stone-50 placeholder-[#A39B8C] dark:placeholder-stone-500
+                     focus:outline-none focus:ring-2 focus:ring-[#6D8B74] dark:focus:ring-orange-400 focus:border-transparent transition" />
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-300 mb-1.5">Correo electronico</label>
+          <label class="block text-sm font-medium text-[#3F4A3D] dark:text-stone-300 mb-1.5">Correo electronico</label>
           <input type="email" id="reg-email" required placeholder="tu@correo.com"
-            class="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
+            class="w-full px-4 py-2.5 bg-[#F5F1E1] dark:bg-stone-800 border border-[#D0C9C0] dark:border-stone-700 rounded-lg text-[#2F3A2D] dark:text-stone-50 placeholder-[#A39B8C] dark:placeholder-stone-500
+                   focus:outline-none focus:ring-2 focus:ring-[#6D8B74] dark:focus:ring-orange-400 focus:border-transparent transition" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-300 mb-1.5">Numero de celular</label>
+          <label class="block text-sm font-medium text-[#3F4A3D] dark:text-stone-300 mb-1.5">Numero de celular</label>
           <input type="tel" id="reg-celular" required maxlength="12" placeholder="1234567890"
-            class="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
-          <p class="text-xs text-slate-500 mt-1">Maximo 12 numeros.</p>
+            class="w-full px-4 py-2.5 bg-[#F5F1E1] dark:bg-stone-800 border border-[#D0C9C0] dark:border-stone-700 rounded-lg text-[#2F3A2D] dark:text-stone-50 placeholder-[#A39B8C] dark:placeholder-stone-500
+                   focus:outline-none focus:ring-2 focus:ring-[#6D8B74] dark:focus:ring-orange-400 focus:border-transparent transition" />
+          <p class="text-xs text-[#6D8B74] dark:text-stone-500 mt-1">Maximo 12 numeros.</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-300 mb-1.5">Contrasena</label>
+          <label class="block text-sm font-medium text-[#3F4A3D] dark:text-stone-300 mb-1.5">Contrasena</label>
           <input type="password" id="reg-password" required placeholder="••••••••"
-            class="w-full px-4 py-2.5 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" />
-          <p class="text-xs text-slate-500 mt-1">Minimo 8 caracteres e incluir al menos un numero.</p>
+            class="w-full px-4 py-2.5 bg-[#F5F1E1] dark:bg-stone-800 border border-[#D0C9C0] dark:border-stone-700 rounded-lg text-[#2F3A2D] dark:text-stone-50 placeholder-[#A39B8C] dark:placeholder-stone-500
+                   focus:outline-none focus:ring-2 focus:ring-[#6D8B74] dark:focus:ring-orange-400 focus:border-transparent transition" />
+          <p class="text-xs text-[#6D8B74] dark:text-stone-500 mt-1">Minimo 8 caracteres e incluir al menos un numero.</p>
         </div>
         <button type="submit" id="btn-register"
-          class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition
-                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-800
+          class="w-full py-2.5 bg-[#5F7161] hover:bg-[#4C5C4E] dark:bg-orange-500 dark:hover:bg-orange-400 text-white font-semibold rounded-lg transition
+                 focus:outline-none focus:ring-2 focus:ring-[#6D8B74] dark:focus:ring-orange-400 focus:ring-offset-2 focus:ring-offset-[#FBF8EE] dark:focus:ring-offset-stone-900
                  disabled:opacity-60 disabled:cursor-not-allowed">
           Crear Cuenta
         </button>
       </form>
 
-      <div id="demo-users" class="mt-6 pt-5 border-t border-slate-700">
-        <p class="text-xs text-slate-500 text-center">Usuarios de prueba:</p>
+      <div id="demo-users" class="mt-6 pt-5 border-t border-[#D0C9C0] dark:border-stone-800">
+        <p class="text-xs text-[#6D8B74] dark:text-stone-500 text-center">Usuarios de prueba:</p>
         <div class="mt-2 space-y-1">
-          <p class="text-xs text-slate-400 text-center">Admin: <span class="text-blue-400">admin@sistema.com</span> / <span class="text-blue-400">admin123</span></p>
-          <p class="text-xs text-slate-400 text-center">Capturista: <span class="text-blue-400">capturista@sistema.com</span> / <span class="text-blue-400">capturista123</span></p>
+          <p class="text-xs text-[#5F7161] dark:text-stone-400 text-center">Admin: <span class="text-[#4C5C4E] dark:text-orange-400">admin@sistema.com</span> / <span class="text-[#4C5C4E] dark:text-orange-400">admin123</span></p>
+          <p class="text-xs text-[#5F7161] dark:text-stone-400 text-center">Capturista: <span class="text-[#4C5C4E] dark:text-orange-400">capturista@sistema.com</span> / <span class="text-[#4C5C4E] dark:text-orange-400">capturista123</span></p>
         </div>
       </div>
     </div>
   </div>
 
   <script>
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('qrfiles-theme', isDark ? 'dark' : 'light');
+    });
+
     function showTab(tab) {
       const isLogin = tab === 'login';
       document.getElementById('login-form').classList.toggle('hidden', !isLogin);
       document.getElementById('register-form').classList.toggle('hidden', isLogin);
       document.getElementById('demo-users').classList.toggle('hidden', !isLogin);
-      document.getElementById('tab-login').classList.toggle('bg-blue-600', isLogin);
-      document.getElementById('tab-login').classList.toggle('text-white', isLogin);
-      document.getElementById('tab-login').classList.toggle('text-slate-400', !isLogin);
-      document.getElementById('tab-register').classList.toggle('bg-blue-600', !isLogin);
-      document.getElementById('tab-register').classList.toggle('text-white', !isLogin);
-      document.getElementById('tab-register').classList.toggle('text-slate-400', isLogin);
+
+      const loginTab = document.getElementById('tab-login');
+      const registerTab = document.getElementById('tab-register');
+
+      loginTab.classList.toggle('bg-[#5F7161]', isLogin);
+      loginTab.classList.toggle('dark:bg-orange-500', isLogin);
+      loginTab.classList.toggle('text-white', isLogin);
+      loginTab.classList.toggle('text-[#5F7161]', !isLogin);
+      loginTab.classList.toggle('dark:text-stone-400', !isLogin);
+
+      registerTab.classList.toggle('bg-[#5F7161]', !isLogin);
+      registerTab.classList.toggle('dark:bg-orange-500', !isLogin);
+      registerTab.classList.toggle('text-white', !isLogin);
+      registerTab.classList.toggle('text-[#5F7161]', isLogin);
+      registerTab.classList.toggle('dark:text-stone-400', isLogin);
+
       document.getElementById('error-msg').classList.add('hidden');
       document.getElementById('success-msg').classList.add('hidden');
     }

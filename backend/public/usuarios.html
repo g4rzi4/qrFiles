@@ -5,31 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Usuarios - QRFiles</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <script>
+    (function () {
+      const saved = localStorage.getItem('qrfiles-theme');
+      const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
-<body class="min-h-screen bg-slate-900 text-white">
+<body class="min-h-screen bg-gradient-to-br from-[#EFEAD8] via-[#F2EEDE] to-[#E3EBE0] dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 text-[#2F3A2D] dark:text-stone-50">
 
   <!-- Navbar -->
-  <nav class="bg-slate-800 border-b border-slate-700 px-6 py-4">
+  <nav class="bg-[#FBF8EE] dark:bg-stone-900 border-b border-[#D0C9C0] dark:border-stone-800 px-6 py-4">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center">
+        <div class="w-9 h-9 bg-[#5F7161] dark:bg-orange-500 rounded-xl flex items-center justify-center">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
         </div>
-        <span class="text-lg font-bold">QRFiles</span>
+        <span class="text-lg font-bold text-[#2F3A2D] dark:text-white">QRFiles</span>
       </div>
       <div class="flex items-center gap-4">
-        <a href="/dashboard.html" class="text-sm text-slate-300 hover:text-white transition">Panel</a>
-        <a href="/upload.html" class="text-sm text-slate-300 hover:text-white transition">Subir Documento</a>
-        <a href="/repository.html" class="text-sm text-slate-300 hover:text-white transition">Repositorio</a>
-        <a href="/usuarios.html" class="text-sm text-blue-400 font-medium">Usuarios</a>
-        <span class="text-slate-600">|</span>
-        <span id="user-name" class="text-sm text-slate-400"></span>
-        <button onclick="logout()" class="text-sm text-red-400 hover:text-red-300 transition font-medium">Cerrar Sesion</button>
+        <a href="/dashboard.html" class="text-sm text-[#4C5C4E] dark:text-stone-300 hover:text-[#2F3A2D] dark:hover:text-white transition">Panel</a>
+        <a href="/upload.html" class="text-sm text-[#4C5C4E] dark:text-stone-300 hover:text-[#2F3A2D] dark:hover:text-white transition">Subir Documento</a>
+        <a href="/repository.html" class="text-sm text-[#4C5C4E] dark:text-stone-300 hover:text-[#2F3A2D] dark:hover:text-white transition">Repositorio</a>
+        <a href="/usuarios.html" class="text-sm text-[#5F7161] dark:text-orange-400 font-medium">Usuarios</a>
+        <span class="text-[#D0C9C0] dark:text-stone-700">|</span>
+        <button id="theme-toggle" type="button" aria-label="Cambiar tema"
+          class="p-2 rounded-lg text-[#5F7161] dark:text-stone-400 hover:bg-[#E3DDC8] dark:hover:bg-stone-800 transition cursor-pointer">
+          <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 7a5 5 0 100 10 5 5 0 000-10z"/>
+          </svg>
+          <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
+        <span id="user-name" class="text-sm text-[#5F7161] dark:text-stone-400"></span>
+        <button onclick="logout()" class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition font-medium">Cerrar Sesion</button>
       </div>
     </div>
   </nav>
@@ -37,26 +54,26 @@
   <main class="max-w-7xl mx-auto px-6 py-10">
     <div class="mb-8">
       <h1 class="text-3xl font-bold">Usuarios</h1>
-      <p class="text-slate-400 mt-1">Documentos clasificados por usuario y estado</p>
+      <p class="text-[#5F7161] dark:text-stone-400 mt-1">Documentos clasificados por usuario y estado</p>
     </div>
 
-    <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+    <div class="bg-[#FBF8EE] dark:bg-stone-900 rounded-2xl border border-[#D0C9C0] dark:border-stone-800 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
-            <tr class="border-b border-slate-700 text-left">
-              <th class="px-5 py-3.5 text-slate-400 font-medium">Usuario</th>
-              <th class="px-5 py-3.5 text-slate-400 font-medium">Correo</th>
-              <th class="px-5 py-3.5 text-slate-400 font-medium">Rol</th>
-              <th class="px-5 py-3.5 text-slate-400 font-medium text-center">Vigentes</th>
-              <th class="px-5 py-3.5 text-slate-400 font-medium text-center">Revocados</th>
-              <th class="px-5 py-3.5 text-slate-400 font-medium text-center">Cancelados</th>
-              <th class="px-5 py-3.5 text-slate-400 font-medium text-center">Total</th>
-              <th class="px-5 py-3.5 text-slate-400 font-medium">Acciones</th>
+            <tr class="border-b border-[#D0C9C0] dark:border-stone-800 text-left">
+              <th class="px-5 py-3.5 text-[#5F7161] dark:text-stone-400 font-medium">Usuario</th>
+              <th class="px-5 py-3.5 text-[#5F7161] dark:text-stone-400 font-medium">Correo</th>
+              <th class="px-5 py-3.5 text-[#5F7161] dark:text-stone-400 font-medium">Rol</th>
+              <th class="px-5 py-3.5 text-[#5F7161] dark:text-stone-400 font-medium text-center">Vigentes</th>
+              <th class="px-5 py-3.5 text-[#5F7161] dark:text-stone-400 font-medium text-center">Revocados</th>
+              <th class="px-5 py-3.5 text-[#5F7161] dark:text-stone-400 font-medium text-center">Cancelados</th>
+              <th class="px-5 py-3.5 text-[#5F7161] dark:text-stone-400 font-medium text-center">Total</th>
+              <th class="px-5 py-3.5 text-[#5F7161] dark:text-stone-400 font-medium">Acciones</th>
             </tr>
           </thead>
-          <tbody id="users-table" class="divide-y divide-slate-700">
-            <tr><td colspan="8" class="px-5 py-10 text-center text-slate-500">Cargando usuarios...</td></tr>
+          <tbody id="users-table" class="divide-y divide-[#D0C9C0] dark:divide-stone-800">
+            <tr><td colspan="8" class="px-5 py-10 text-center text-[#6D8B74] dark:text-stone-500">Cargando usuarios...</td></tr>
           </tbody>
         </table>
       </div>
@@ -64,11 +81,16 @@
   </main>
 
   <script>
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('qrfiles-theme', isDark ? 'dark' : 'light');
+    });
+
     let currentUserId = null;
 
     const rolBadge = {
-      admin: 'bg-blue-900/60 text-blue-400 border border-blue-800',
-      capturista: 'bg-slate-700 text-slate-300 border border-slate-600'
+      admin: 'bg-[#E3EBE0] text-[#3F4A3D] border border-[#B9CDB4] dark:bg-orange-900/40 dark:text-orange-400 dark:border-orange-800',
+      capturista: 'bg-[#E3DDC8] text-[#4C5C4E] border border-[#D0C9C0] dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700'
     };
 
     async function checkAuth() {
@@ -85,38 +107,38 @@
       try {
         const res = await fetch('/api/users');
         if (!res.ok) {
-          tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-10 text-center text-slate-500">No se pudo cargar la informacion.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-10 text-center text-[#6D8B74] dark:text-stone-500">No se pudo cargar la informacion.</td></tr>';
           return;
         }
         const usuarios = await res.json();
 
         if (usuarios.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-10 text-center text-slate-500">No hay usuarios registrados.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-10 text-center text-[#6D8B74] dark:text-stone-500">No hay usuarios registrados.</td></tr>';
           return;
         }
 
         tbody.innerHTML = usuarios.map(u => `
-          <tr class="hover:bg-slate-700/30 transition">
-            <td class="px-5 py-4 text-white font-medium">${u.nombre} ${u.apellidos || ''}</td>
-            <td class="px-5 py-4 text-slate-300">${u.email}</td>
+          <tr class="hover:bg-[#EFEAD8] dark:hover:bg-stone-800/50 transition">
+            <td class="px-5 py-4 text-[#2F3A2D] dark:text-white font-medium">${u.nombre} ${u.apellidos || ''}</td>
+            <td class="px-5 py-4 text-[#4C5C4E] dark:text-stone-300">${u.email}</td>
             <td class="px-5 py-4">
               <span class="text-xs px-2.5 py-1 rounded-full font-medium ${rolBadge[u.rol] || ''}">
                 ${u.rol.charAt(0).toUpperCase() + u.rol.slice(1)}
               </span>
             </td>
-            <td class="px-5 py-4 text-center text-green-400 font-semibold">${u.vigentes}</td>
-            <td class="px-5 py-4 text-center text-yellow-400 font-semibold">${u.revocados}</td>
-            <td class="px-5 py-4 text-center text-red-400 font-semibold">${u.cancelados}</td>
-            <td class="px-5 py-4 text-center text-white font-semibold">${u.total}</td>
+            <td class="px-5 py-4 text-center text-emerald-600 dark:text-emerald-400 font-semibold">${u.vigentes}</td>
+            <td class="px-5 py-4 text-center text-amber-600 dark:text-amber-400 font-semibold">${u.revocados}</td>
+            <td class="px-5 py-4 text-center text-red-600 dark:text-red-400 font-semibold">${u.cancelados}</td>
+            <td class="px-5 py-4 text-center text-[#2F3A2D] dark:text-white font-semibold">${u.total}</td>
             <td class="px-5 py-4">
               <div class="flex items-center gap-2 flex-wrap">
                 <a href="/repository.html?usuario_id=${u.id}"
-                  class="px-2.5 py-1 bg-blue-700/50 hover:bg-blue-700 border border-blue-700 text-blue-300 text-xs rounded-lg transition">
+                  class="px-2.5 py-1 bg-[#E3EBE0] dark:bg-orange-900/40 hover:bg-[#D3E0CE] dark:hover:bg-orange-800/60 border border-[#B9CDB4] dark:border-orange-800 text-[#3F4A3D] dark:text-orange-300 text-xs rounded-lg transition">
                   Ver documentos
                 </a>
                 ${u.id === currentUserId ? '' : `
                 <button onclick="eliminarUsuario(${u.id}, ${JSON.stringify(u.nombre + ' ' + (u.apellidos || ''))})"
-                  class="px-2.5 py-1 bg-red-900/40 hover:bg-red-800/60 border border-red-800 text-red-300 text-xs rounded-lg transition">
+                  class="px-2.5 py-1 bg-red-50 dark:bg-red-900/40 hover:bg-red-100 dark:hover:bg-red-800/60 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs rounded-lg transition">
                   Eliminar
                 </button>`}
               </div>
@@ -125,7 +147,7 @@
         `).join('');
       } catch (err) {
         console.error(err);
-        tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-10 text-center text-slate-500">Error de conexion.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="px-5 py-10 text-center text-[#6D8B74] dark:text-stone-500">Error de conexion.</td></tr>';
       }
     }
 
