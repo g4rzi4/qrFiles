@@ -12,7 +12,7 @@ services:
       - DB_PASSWORD=qrpassword
       - DB_NAME=qrfiles_db
       - SESSION_SECRET=qrfiles_super_secret_2024
-      - APP_URL=http://192.168.1.85:3000
+      - APP_URL=https://prompt-comedy-eating-discounts.trycloudflare.com
       - PORT=3000
     volumes:
       - uploads_data:/app/uploads
