@@ -8,8 +8,10 @@ USE qrfiles_db;
 CREATE TABLE IF NOT EXISTS usuarios (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
+  apellidos VARCHAR(150) NOT NULL DEFAULT '',
   email VARCHAR(100) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
+  celular VARCHAR(20) NOT NULL DEFAULT '',
   rol ENUM('admin', 'capturista') DEFAULT 'capturista',
   activo TINYINT(1) DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -42,6 +42,53 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.post('/register', async (req, res) => {
+  try {
+    const { nombre, apellidos, email, password, celular } = req.body;
+
+    if (!nombre || !apellidos || !email || !password || !celular) {
+      return res.status(400).json({ error: 'Todos los campos son requeridos.' });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'El correo electronico no es valido.' });
+    }
+
+    if (password.length < 8 || !/\d/.test(password)) {
+      return res.status(400).json({ error: 'La contrasena debe tener minimo 8 caracteres e incluir al menos un numero.' });
+    }
+
+    const celularDigits = celular.replace(/\D/g, '');
+    if (celularDigits.length === 0 || celularDigits.length > 12) {
+      return res.status(400).json({ error: 'El numero de celular debe tener maximo 12 numeros.' });
+    }
+
+    const [existentes] = await db.execute('SELECT id FROM usuarios WHERE email = ?', [email]);
+    if (existentes.length > 0) {
+      return res.status(409).json({ error: 'Ya existe una cuenta registrada con este correo.' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const [result] = await db.execute(
+      'INSERT INTO usuarios (nombre, apellidos, email, password_hash, celular, rol) VALUES (?, ?, ?, ?, ?, ?)',
+      [nombre, apellidos, email, passwordHash, celularDigits, 'capturista']
+    );
+
+    req.session.userId = result.insertId;
+    req.session.userNombre = nombre;
+    req.session.userRol = 'capturista';
+
+    res.status(201).json({
+      message: 'Cuenta registrada exitosamente.',
+      user: { id: result.insertId, nombre, email, rol: 'capturista' }
+    });
+  } catch (err) {
+    console.error('Error en registro:', err);
+    res.status(500).json({ error: 'Error interno del servidor.' });
+  }
+});
+
 router.post('/logout', (req, res) => {
   req.session.destroy(() => {
     res.json({ message: 'Sesion cerrada.' });
