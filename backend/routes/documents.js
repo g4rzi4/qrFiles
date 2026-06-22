@@ -29,6 +29,10 @@ const upload = multer({
   limits: { fileSize: 20 * 1024 * 1024 }
 });
 
+function esPropietarioOAdmin(doc, req) {
+  return req.session.userRol === 'admin' || doc.usuario_id === req.session.userId;
+}
+
 function generarFolio() {
   const year = new Date().getFullYear();
   const short = uuidv4().replace(/-/g, '').substring(0, 8).toUpperCase();
@@ -151,15 +155,17 @@ router.post('/', requireAuth, upload.single('pdf'), async (req, res) => {
   }
 });
 
-// GET /api/documents - Listar todos los documentos
+// GET /api/documents - Listar documentos (admin ve todos, el resto solo los propios)
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const [rows] = await db.execute(
-      `SELECT d.*, u.nombre AS usuario_nombre
+    const esAdmin = req.session.userRol === 'admin';
+    const query = `SELECT d.*, u.nombre AS usuario_nombre
        FROM documentos d
        JOIN usuarios u ON d.usuario_id = u.id
-       ORDER BY d.created_at DESC`
-    );
+       ${esAdmin ? '' : 'WHERE d.usuario_id = ?'}
+       ORDER BY d.created_at DESC`;
+
+    const [rows] = await db.execute(query, esAdmin ? [] : [req.session.userId]);
     res.json(rows);
   } catch (err) {
     console.error('Error al obtener documentos:', err);
@@ -179,6 +185,9 @@ router.get('/:id', requireAuth, async (req, res) => {
     );
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Documento no encontrado.' });
+    }
+    if (!esPropietarioOAdmin(rows[0], req)) {
+      return res.status(403).json({ error: 'No tienes permiso para ver este documento.' });
     }
     res.json(rows[0]);
   } catch (err) {
@@ -204,6 +213,9 @@ router.put('/:id/estado', requireAuth, async (req, res) => {
     }
 
     const doc = rows[0];
+    if (!esPropietarioOAdmin(doc, req)) {
+      return res.status(403).json({ error: 'No tienes permiso para modificar este documento.' });
+    }
     await conn.beginTransaction();
 
     await conn.execute(
@@ -236,9 +248,12 @@ router.put('/:id', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Titulo, tipo de documento y area emisora son requeridos.' });
     }
 
-    const [rows] = await db.execute('SELECT id FROM documentos WHERE id = ?', [req.params.id]);
+    const [rows] = await db.execute('SELECT * FROM documentos WHERE id = ?', [req.params.id]);
     if (rows.length === 0) {
       return res.status(404).json({ error: 'Documento no encontrado.' });
+    }
+    if (!esPropietarioOAdmin(rows[0], req)) {
+      return res.status(403).json({ error: 'No tienes permiso para editar este documento.' });
     }
 
     await db.execute(
@@ -262,6 +277,9 @@ router.delete('/:id', requireAuth, async (req, res) => {
     }
 
     const doc = rows[0];
+    if (!esPropietarioOAdmin(doc, req)) {
+      return res.status(403).json({ error: 'No tienes permiso para eliminar este documento.' });
+    }
 
     await db.execute('DELETE FROM documentos WHERE id = ?', [req.params.id]);
 
@@ -291,6 +309,9 @@ router.get('/:id/download', requireAuth, async (req, res) => {
     }
 
     const doc = rows[0];
+    if (!esPropietarioOAdmin(doc, req)) {
+      return res.status(403).json({ error: 'No tienes permiso para descargar este documento.' });
+    }
     const filePath = path.join(__dirname, '../uploads/qr_pdfs', doc.pdf_qr_path);
 
     if (!fs.existsSync(filePath)) {
